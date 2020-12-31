@@ -33,7 +33,7 @@ class MarkedPatternGraph(object):
                 E.g. [('a', 'b'), ('b', 'c')] => a -*-> b, b -*-> c
             unmarked_arrows: list[tuple[str]]
                 E.g. [('a', 'b'), ('b', 'c')] => a ---> b, b ---> c
-            bidirected_edges: list[tuple[str]]
+            bidirected_edges: list[sets[str]]
                 E.g. [set(('a', 'b')), set(('b', 'c'))] => a <--> b, b <--> c
             undirected_edges: list[sets[str]]
                 E.g. [set(('a', 'b')), set(('b', 'c'))] => a ---- b, b ---- c
@@ -67,11 +67,13 @@ class MarkedPatternGraph(object):
         for from_node, to_node in self.unmarked_arrows:
             digraph.edge(from_node, to_node)
 
-        for node_1, node_2 in self.bidirected_edges:
-            digraph.edge(node_1, node_2, _attributes={"dir": "both"})
+        for edge_set in self.bidirected_edges:
+            edges = list(edge_set)
+            digraph.edge(edges[0], edges[1], _attributes={"dir": "both"})
 
-        for node_1, node_2 in self.undirected_edges:
-            digraph.edge(node_1, node_2, _attributes={"dir": "none"})
+        for edge_set in self.undirected_edges:
+            edges = list(edge_set)
+            digraph.edge(edges[0], edges[1], _attributes={"dir": "none"})
 
         return digraph
 
