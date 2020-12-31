@@ -65,7 +65,7 @@ def entropy(data, variables=[]):
 
     assert len(variables) > 0
 
-    variable_counts = data.groupby(variables).count()
+    variable_counts = data.groupby(list(variables)).count()
     probas = variable_counts / total_count
 
     return -(probas * np.log2(probas)).sum()[count_col_name]
@@ -346,6 +346,11 @@ def sci_is_independent(data, vars_1=[], vars_2=[], conditioning_set=[]):
         conditional mutual information is small enough to consider
         "independent" given sample size and complexity of the distributions.
 
+        Note: This method does test-wise deletion. In other words, this only
+        considers rows that have no NAs for the set of columns pertaining to
+        this test. Those set of columns are the union of vars_1, vars_2, and
+        the conditioning_set.
+
         Parameters:
             data: pandas.DataFrame
 
@@ -393,22 +398,26 @@ def sci_is_independent(data, vars_1=[], vars_2=[], conditioning_set=[]):
             >>>     conditioning_set=['z']
             >>> ) == True
     """
-    sample_size = data.shape[0]
+    testwise_deleted_data = \
+        data[
+            list(set(conditioning_set).union(set(vars_1)).union(set(vars_2)))
+        ].dropna()
+    sample_size = testwise_deleted_data.shape[0]
 
     stochastic_complexity_score = sample_size \
         * conditional_mutual_information(
-            data=data,
+            data=testwise_deleted_data,
             vars_1=vars_1,
             vars_2=vars_2,
             conditioning_set=conditioning_set
         ) \
         + regret(
-            data=data,
-            variables=vars_1,
-            conditioning_set=conditioning_set
-          )  \
-        - regret(
-            data=data,
+                data=testwise_deleted_data,
+                variables=vars_1,
+                conditioning_set=conditioning_set
+              )  \
+            - regret(
+                data=testwise_deleted_data,
             variables=vars_1,
             conditioning_set=list(set(conditioning_set).union(vars_2))
         )
