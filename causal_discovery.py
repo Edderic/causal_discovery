@@ -134,7 +134,7 @@ class SkeletonFinder():
                         is a key, then X and Y are the variables that are
                         conditionally independent.
 
-                    value: list(tuple).
+                    value: list(sets(str)).
                         The conditioning sets that make X and Y conditionally
                         independent.
         """
@@ -174,10 +174,6 @@ class SkeletonFinder():
             Goes through possible conditioning sets, including the empty set.
         """
 
-        # TODO: What about the case where the number of variables is 2?
-        # TODO: set in-degree (i.e. the number of possible parents that one can
-        # have)
-
         for cond_set_length in np.arange(len(self.var_names) - 1):
             cond_set_combos = combinations(
                 list(
@@ -199,40 +195,107 @@ class SkeletonFinder():
 
         return False
 
-# class DirectCausesOfMissingnessFinder(object):
-    # def __init__(
-        # self,
-        # data,
-        # marked_pattern_graph,
-        # missingness_prefix='missingness_indicator_'
-    # ):
-        # self.data = data
-        # self.marked_pattern_graph = marked_pattern_graph
-#
-    # def find(self):
-        # self.add_missing_vars_to_marked_pattern_graph()
-        # test
-#
-        # for col_with_missingness in self._cols_with_missingness():
-            # for var in data.columns:
-                # if missingness_prefix + var != col_with_missingness:
-#
-#
-        # return self.marked_pattern_graph
-#
-    # def _add_missing_vars_to_marked_pattern_graph():
-        # prefixed_missing_vars = \
-            # [self.missingness_prefix + n for n in self._cols_with_missingness()]
-#
-        # self.marked_pattern_graph.add_nodes(prefixed_missing_vars)
-#
-    # def _cols_with_missingness():
-        # if self.cols_with_missingness:
+class DirectCausesOfMissingnessFinder(object):
+    """
+        Finds the direct causes of missingness.
+
+        Assumption: All causes of missingness are observed.
+
+        Assumption: Missingness indicators cannot cause other variables.
+
+        Assumption: No self-masking type of missingness. An example of
+        self-masking is rich people being less likely to disclose their
+        incomes.
+
+        Assumption: Faithful observability. ???
+
+        Combining the two assumptions: If a missing indicator is not found to
+        be conditionally independent with a variable, then the latter must be a
+        parent of the former.
+
+        Paramters:
+            data: pd.DataFrame
+
+            marked_pattern_graph: MarkedPatternGraph
+
+            missingness_prefix: str. Defaults to "MI_"
+                This is the string that gets prefixed to a column that has
+                missingness.
+
+            is_conditionally_independent_func: function.
+                Defaults to sci_is_independent.
+
+                Takes the following as parameters:
+                   data: pd.DataFrame
+                   vars_1: list[str]
+                   vars_2: list[str]
+                   conditioning_set: list[str]
+
+            indegree: int. Defaults to 8.
+                The number of nodes that can be associated to another node.
+    """
+    def __init__(
+        self,
+        data,
+        marked_pattern_graph,
+        missingness_prefix='MI_',
+        is_conditionally_independent_func=sci_is_independent,
+        indegree=8
+    ):
+        self.data = data.copy()
+        self.orig_data_cols = self.data.columns
+        self.marked_pattern_graph = marked_pattern_graph
+        self.missingness_prefix = missingness_prefix
+        self.is_conditionally_independent_func = is_conditionally_independent_func
+        self.indegree = indegree
+
+    def find(self):
+        """
+            Returns a MarkedPatternGraph with direct edges to missingness
+            indicators, if applicable.
+        """
+
+        self._add_missing_vars_to_marked_pattern_graph()
+
+        for col_with_missingness in self._cols_with_missingness():
+            missingness_col_name = self.missingness_prefix + col_with_missingness
+            self.data[missingness_col_name] = self.data[col_with_missingness].isnull()
+
+            for potential_parent in self.data.columns:
+                if self.missingness_prefix + potential_parent != col_with_missingness:
+                    self.data[col_with_missingness]
+
+                    cond_sets = conditioning_sets_satisfying_conditional_independence(
+                        data=self.data,
+                        var_name_1=missingness_col_name,
+                        var_name_2=potential_parent,
+                        is_conditionally_independent_func=self.is_conditionally_independent_func,
+                        possible_conditioning_set_vars=list(
+                            set(self.orig_data_cols)-set([missingness_col_name, potential_parent])
+                        ),
+                        indegree=self.indegree,
+                        only_find_one=True
+                    )
+
+                    if len(cond_sets) == 0:
+                        self.marked_pattern_graph.add_direct_edge(
+                            (potential_parent, missingness_col_name)
+                        )
+
+        return self.marked_pattern_graph
+
+    def _add_missing_vars_to_marked_pattern_graph(self):
+        prefixed_missing_vars = \
+            [self.missingness_prefix + n for n in self._cols_with_missingness()]
+
+        self.marked_pattern_graph.add_nodes(prefixed_missing_vars)
+
+    def _cols_with_missingness(self):
+        # if len(set(dir(self)).intersection(set(['cols_with_missingness']))) > 0:
             # return self.cols_with_missingness
-#
-        # cols_missing_count = self.data.isnull().sum()
-        # self.cols_with_missingness = \
-            # cols_missing_count[cols_missing_count == 1].index.values
-#
-        # return self.cols_with_missingness
-#
+
+        cols_missing_count = self.data.isnull().sum()
+        self.cols_with_missingness = \
+            cols_missing_count[cols_missing_count > 0].index.values
+
+        return self.cols_with_missingness
