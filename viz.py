@@ -55,6 +55,9 @@ class MarkedPatternGraph(object):
         self.bidirected_edges = bidirected_edges
         self.undirected_edges = undirected_edges
 
+    def add_nodes(self, nodes):
+        self.nodes = list(set(self.nodes).union(set(nodes)))
+
     def graphviz(self):
         digraph = Digraph(comment='marked_pattern')
 
