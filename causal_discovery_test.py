@@ -1,6 +1,8 @@
 import pytest
+import pandas as pd
 import numpy as np
-from causal_discovery import SkeletonFinder, DirectCausesOfMissingnessFinder
+from causal_discovery import SkeletonFinder, DirectCausesOfMissingnessFinder, PotentiallyExtraneousEdgesFinder
+from viz import MarkedPatternGraph
 
 def test_skeleton_finder_2_multinom_RVs(df_2_multinomial_indep_RVs):
     skeleton_finder = SkeletonFinder(
@@ -91,7 +93,6 @@ def test_direct_causes_of_missingness_finder_2_multinom_RVs_MAR(
     assert graph.undirected_edges == []
     assert graph.marked_arrows == [('y', 'MI_x')]
 
-@pytest.mark.focus
 def test_direct_causes_of_missingness_finder_3_multinom_RVs_MAR(
     df_Z_causes_X_Y_and_X_Z_causes_MI_Y
 ):
@@ -115,3 +116,16 @@ def test_direct_causes_of_missingness_finder_3_multinom_RVs_MAR(
     assert set(graph.nodes).intersection(set(['x', 'y', 'MI_x']))
     assert graph.undirected_edges == [set(('x', 'z')), set(('z', 'y'))]
     assert set(graph.marked_arrows) == set([('z', 'MI_y'), ('x', 'MI_y')])
+
+@pytest.mark.focus
+def test_potentially_extraneous_edges_finder_mcar():
+    marked_pattern_graph = MarkedPatternGraph(
+        nodes=['X', 'Y', 'MI_x']
+    )
+
+    potentially_extraneous_edges_finder = PotentiallyExtraneousEdgesFinder(
+        data=pd.DataFrame(),
+        marked_pattern_graph=marked_pattern_graph
+    )
+
+    assert potentially_extraneous_edges_finder.find() == []

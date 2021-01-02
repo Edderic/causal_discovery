@@ -304,7 +304,7 @@ class DirectCausesOfMissingnessFinder(object):
 
         return self.cols_with_missingness
 
-class PotentialExtraneousEdgesFinder():
+class PotentiallyExtraneousEdgesFinder(object):
     """
         Find edges that might be extraneous. We do this because conditional
         independence testing X _||_ Y | Z on test-wise deleted data (i.e.
@@ -329,15 +329,30 @@ class PotentialExtraneousEdgesFinder():
         on it, we might find a graph like so:
 
         E.g. X-Z, Y-Z         # X and Y are connected to Z
-             X-A, Y-A,        # W might be a collider (e.g. X->W, Y->W is
+             X-A, Y-A,        # A might be a collider (e.g. X->A, Y->A is
                               #   possible).
              A->Ry            # Ry is a descendant of a collider.
              X-Y              # Conditioning on a collider / descendant of a
-                              #   collider leads to spurious edges.
+                              #   collider could lead to spurious edges.
 
 
         Note: This only applies when missingness is MAR or MNAR. If data given
         is MCAR, then there shouldn't be extraneous edges and exit early.
+
+        Parameters:
+            data: pandas.DataFrame.
+            marked_pattern_graph: MarkedPatternGraph
+                responds to:
+                    - marked_arrows
+                        We assume that if MAR or MNAR, missingness indicators
+                        would be a node in directed arrows. If not, then there
+                        are no extraneous edges.
+
+                        We assume that missingness indicators in nodes of
+                        directed arrows have the same missingness indicator
+                        prefix below.
+
+            missingness_indicator_prefix: str. Defaults to "MI_".
     """
     def __init__(
         self,
@@ -349,8 +364,10 @@ class PotentialExtraneousEdgesFinder():
         self.missingness_indicator_prefix = missingness_indicator_prefix
 
     def find(self):
-        pass
-        # TODO: check for MCAR case. If so, exit early
+        # missingness indicators are not descendants of other variables, so
+        # this is MCAR.
+        if len(self.marked_pattern_graph.marked_arrows) == 0:
+            return []
         # for node_1, node_2 in tuple(self.marked_pattern_graph.undirected_edges):
             # find_
 
