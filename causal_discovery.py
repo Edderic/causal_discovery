@@ -14,7 +14,7 @@ from information_theory import sci_is_independent
 from itertools import combinations
 from viz import MarkedPatternGraph
 import numpy as np
-
+import re
 
 def conditioning_sets_satisfying_conditional_independence(
     data,
@@ -303,3 +303,57 @@ class DirectCausesOfMissingnessFinder(object):
             cols_missing_count[cols_missing_count > 0].index.values
 
         return self.cols_with_missingness
+
+class PotentialExtraneousEdgesFinder():
+    """
+        Find edges that might be extraneous. We do this because conditional
+        independence testing X _||_ Y | Z on test-wise deleted data (i.e.
+        excluding rows where X,Y and set Z are missing) could lead to
+        extraneous edges. If missingness indicators are children / descendants
+        of X & Y, it's possible to find that X is dependent of Y given Z even
+        though in the real data-generating process, X is independent of Y given
+        Z.
+
+        Potential extraneous edges are those whose pair of variables belong to
+        edges that have a common variable other than those two.
+
+        Let's say we know the true data-generating process. Let's say we have
+        variables X,Y,Z,A and that X and Y are marginally independent (e.g.
+        conditionally independent given the empty set).
+
+        E.g. X->Z, Z->Y,      # X causes Z, and Z causes Y.
+             X->A, Y->A,      # A is a collider.
+             A->Ry            # Ry is a descendant of a collider.
+
+        Once we have a data set produced by the above, running SkeletonFinder
+        on it, we might find a graph like so:
+
+        E.g. X-Z, Y-Z         # X and Y are connected to Z
+             X-A, Y-A,        # W might be a collider (e.g. X->W, Y->W is
+                              #   possible).
+             A->Ry            # Ry is a descendant of a collider.
+             X-Y              # Conditioning on a collider / descendant of a
+                              #   collider leads to spurious edges.
+
+
+        Note: This only applies when missingness is MAR or MNAR. If data given
+        is MCAR, then there shouldn't be extraneous edges and exit early.
+    """
+    def __init__(
+        self,
+        data,
+        marked_pattern_graph,
+        missingness_indicator_prefix = "MI_"
+    ):
+        self.marked_pattern_graph = marked_pattern_graph
+        self.missingness_indicator_prefix = missingness_indicator_prefix
+
+    def find(self):
+        pass
+        # TODO: check for MCAR case. If so, exit early
+        # for node_1, node_2 in tuple(self.marked_pattern_graph.undirected_edges):
+            # find_
+
+
+    def _not_a_missing_indicator(node):
+        return re.search(self.missingness_indicator_prefix, node) != None
