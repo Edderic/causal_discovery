@@ -261,25 +261,29 @@ class DirectCausesOfMissingnessFinder(object):
             missingness_col_name = self.missingness_prefix + col_with_missingness
             self.data[missingness_col_name] = self.data[col_with_missingness].isnull()
 
-            for potential_parent in self.data.columns:
-                if self.missingness_prefix + potential_parent != col_with_missingness:
-                    self.data[col_with_missingness]
-
+            for potential_parent in self.orig_data_cols:
+                # Assumption: no self-masking (i.e. A doesn't cause MI_A)
+                if potential_parent != col_with_missingness:
                     cond_sets = conditioning_sets_satisfying_conditional_independence(
                         data=self.data,
                         var_name_1=missingness_col_name,
                         var_name_2=potential_parent,
                         is_conditionally_independent_func=self.is_conditionally_independent_func,
                         possible_conditioning_set_vars=list(
-                            set(self.orig_data_cols)-set([missingness_col_name, potential_parent])
+                            set(self.data.columns)\
+                            -set([
+                                    col_with_missingness,
+                                    missingness_col_name,
+                                    potential_parent
+                            ])
                         ),
                         indegree=self.indegree,
                         only_find_one=True
                     )
 
                     if len(cond_sets) == 0:
-                        self.marked_pattern_graph.add_direct_edge(
-                            (potential_parent, missingness_col_name)
+                        self.marked_pattern_graph.add_marked_arrows(
+                            [(potential_parent, missingness_col_name)]
                         )
 
         return self.marked_pattern_graph
@@ -291,8 +295,8 @@ class DirectCausesOfMissingnessFinder(object):
         self.marked_pattern_graph.add_nodes(prefixed_missing_vars)
 
     def _cols_with_missingness(self):
-        # if len(set(dir(self)).intersection(set(['cols_with_missingness']))) > 0:
-            # return self.cols_with_missingness
+        if len(set(dir(self)).intersection(set(['cols_with_missingness']))) > 0:
+            return self.cols_with_missingness
 
         cols_missing_count = self.data.isnull().sum()
         self.cols_with_missingness = \

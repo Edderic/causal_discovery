@@ -58,6 +58,9 @@ class MarkedPatternGraph(object):
     def add_nodes(self, nodes):
         self.nodes = list(set(self.nodes).union(set(nodes)))
 
+    def add_marked_arrows(self, marked_arrows):
+        self.marked_arrows = list(set(self.marked_arrows).union(set(marked_arrows)))
+
     def graphviz(self):
         digraph = Digraph(comment='marked_pattern')
 
