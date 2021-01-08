@@ -14,6 +14,7 @@ from information_theory import sci_is_independent
 from itertools import combinations
 from viz import MarkedPatternGraph
 import numpy as np
+import pandas as pd
 import re
 
 def conditioning_sets_satisfying_conditional_independence(
@@ -23,7 +24,9 @@ def conditioning_sets_satisfying_conditional_independence(
     is_conditionally_independent_func,
     possible_conditioning_set_vars=[],
     indegree=8,
-    only_find_one=False
+    only_find_one=False,
+    adjusted_data_generator=None,
+    marked_pattern_graph=None
 ):
     """
         Does pairwise conditional independence testing. Tries to find
@@ -39,6 +42,27 @@ def conditioning_sets_satisfying_conditional_independence(
             var_name_2: str
                 Represented by Y in X _||_ Y | Z.
 
+            is_conditionally_independent_func: function
+                This is the function that tests for conditional independendence.
+
+                Parameters:
+                    data: pandas.DataFrame
+
+                    vars_1: list[str]
+                        A set of variables present in data.  Disjoint from vars_2 and
+                        conditioning_set.
+
+                    vars_2: list[str]
+                        Another set of variables present in data. Disjoint from vars_1
+                        and conditioning_set.
+
+                    conditioning_set: list[str]. Defaults to empty list.
+                        Disjoint from vars_1 and vars_2.
+
+            adjusted_data_generator: function. Defaults to None.
+                If this exists, the function will be used to generate data that
+                is meant for validating potentially extraneous edges.
+
             possible_conditioning_set_vars: list.
                 The list of variables that we could possibly condition on.
                 Represented by Z in X _||_ Y | Z.
@@ -49,6 +73,10 @@ def conditioning_sets_satisfying_conditional_independence(
             only_find_one: bool. Defaults to False.
                 If a conditioning set satisfying the conditional independence
                 statement is found, then quickly return.
+
+            marked_pattern_graph: MarkedPatternGraph. Defaults to None.
+                The existing graph.
+
 
         Returns: list if there's at least one. Otherwise, returns None
     """
@@ -75,9 +103,18 @@ def conditioning_sets_satisfying_conditional_independence(
         )
 
         for cond_set_combo in cond_set_combos:
+            if adjusted_data_generator != None:
+                _data = adjusted_data_generator(
+                    data=data,
+                    var_names=set(cond_set_combo)\
+                              .union(set({var_name_1, var_name_2})),
+                    marked_pattern_graph=marked_pattern_graph
+                )
+            else:
+                _data = data
 
             if is_conditionally_independent_func(
-                   data=data,
+                   data=_data,
                    vars_1=[var_name_1],
                    vars_2=[var_name_2],
                    conditioning_set=list(cond_set_combo),
@@ -108,12 +145,19 @@ class SkeletonFinder():
         var_names,
         data,
         is_conditionally_independent_func=sci_is_independent,
-        indegree=8
+        indegree=8,
+        missing_indicator_prefix='MI_'
     ):
         self.var_names = var_names
-        self.data = data
+        self.data = data.merge(
+            data.isnull().add_prefix(missing_indicator_prefix),
+            left_index=True,
+            right_index=True
+        )
+        self.orig_cols = list(data.columns)
         self.is_conditionally_independent_func = is_conditionally_independent_func
         self.indegree = indegree
+        self.missing_indicator_prefix = missing_indicator_prefix
 
     def find(self):
         """
@@ -141,10 +185,10 @@ class SkeletonFinder():
         undirected_edges = []
         cond_sets_satisfying_cond_indep = {}
 
-        for var_name_1, var_name_2 in combinations(self.var_names, 2):
-            possible_conditioning_set_vars = list(
-                set(self.var_names) - set([var_name_1, var_name_2])
-            )
+        for var_name_1, var_name_2 in combinations(self.orig_cols, 2):
+            possible_conditioning_set_vars = \
+                set(self.orig_cols) \
+                - set([var_name_1, var_name_2])
 
             cond_sets = conditioning_sets_satisfying_conditional_independence(
                 data=self.data,
@@ -152,22 +196,23 @@ class SkeletonFinder():
                 var_name_2=var_name_2,
                 is_conditionally_independent_func=self.is_conditionally_independent_func,
                 possible_conditioning_set_vars=possible_conditioning_set_vars,
-                indegree=self.indegree
+                indegree=self.indegree,
+                only_find_one=False
             )
 
             if len(cond_sets) == 0:
-                undirected_edges.append(set((var_name_1, var_name_2)))
+                undirected_edges.append(frozenset((var_name_1, var_name_2)))
             else:
                 cond_sets_satisfying_cond_indep[
                     var_name_1 + ' _||_ ' + var_name_2
                 ] = cond_sets
 
         marked_pattern = MarkedPatternGraph(
-            nodes=self.var_names,
+            nodes=list(self.data.columns),
             undirected_edges=undirected_edges
         )
 
-        return marked_pattern, cond_sets_satisfying_cond_indep
+        return marked_pattern, cond_sets_satisfying_cond_indep, self.data
 
     def _is_independent(self, var_name_1, var_name_2):
         """
@@ -238,14 +283,14 @@ class DirectCausesOfMissingnessFinder(object):
         self,
         data,
         marked_pattern_graph,
-        missingness_prefix='MI_',
+        missingness_indicator_prefix='MI_',
         is_conditionally_independent_func=sci_is_independent,
         indegree=8
     ):
         self.data = data.copy()
         self.orig_data_cols = self.data.columns
         self.marked_pattern_graph = marked_pattern_graph
-        self.missingness_prefix = missingness_prefix
+        self.missingness_indicator_prefix = missingness_indicator_prefix
         self.is_conditionally_independent_func = is_conditionally_independent_func
         self.indegree = indegree
 
@@ -255,13 +300,10 @@ class DirectCausesOfMissingnessFinder(object):
             indicators, if applicable.
         """
 
-        self._add_missing_vars_to_marked_pattern_graph()
-
         for col_with_missingness in self._cols_with_missingness():
-            missingness_col_name = self.missingness_prefix + col_with_missingness
-            self.data[missingness_col_name] = self.data[col_with_missingness].isnull()
+            missingness_col_name = self.missingness_indicator_prefix + col_with_missingness
 
-            for potential_parent in self.orig_data_cols:
+            for potential_parent in self._orig_vars():
                 # Assumption: no self-masking (i.e. A doesn't cause MI_A)
                 if potential_parent != col_with_missingness:
                     cond_sets = conditioning_sets_satisfying_conditional_independence(
@@ -288,13 +330,14 @@ class DirectCausesOfMissingnessFinder(object):
 
         return self.marked_pattern_graph
 
-    def _add_missing_vars_to_marked_pattern_graph(self):
-        prefixed_missing_vars = \
-            [self.missingness_prefix + n for n in self._cols_with_missingness()]
-
-        self.marked_pattern_graph.add_nodes(prefixed_missing_vars)
+    def _orig_vars(self):
+        return self.data.columns[
+            ~self.data.columns.str.contains(self.missingness_indicator_prefix)
+        ]
 
     def _cols_with_missingness(self):
+        self.data.columns.str.contains(self.missingness_indicator_prefix)
+
         if len(set(dir(self)).intersection(set(['cols_with_missingness']))) > 0:
             return self.cols_with_missingness
 
@@ -367,10 +410,265 @@ class PotentiallyExtraneousEdgesFinder(object):
         # missingness indicators are not descendants of other variables, so
         # this is MCAR.
         if len(self.marked_pattern_graph.marked_arrows) == 0:
+            return [], self.marked_pattern_graph
+
+        potentially_extraneous_edges = []
+
+        for some_set in self._undirected_edges():
+            node_1, node_2 = tuple(some_set)
+
+            common_nodes = self._get_adjacent_nodes(node_1)\
+                .intersection(self._get_adjacent_nodes(node_2))
+
+            if len(common_nodes) > 0:
+                potentially_extraneous_edges.append(some_set)
+
+        return set(potentially_extraneous_edges)
+
+    def _get_adjacent_nodes(self, node):
+        new_set = set([])
+
+        for edge in self._relevant_edges():
+            some_set = set(edge)
+            if some_set.intersection(set([node])) != set([]):
+                new_set = new_set.union(some_set)
+
+        return new_set - set([node])
+
+    def _relevant_edges(self):
+        return frozenset(self._undirected_edges()).union(frozenset(self._marked_arrows()))
+
+    def _undirected_edges(self):
+        return self.marked_pattern_graph.undirected_edges
+
+    def _marked_arrows(self):
+        return self.marked_pattern_graph.marked_arrows
+
+class DensityRatioWeightedCorrection(object):
+    """
+        Takes in data with missingness, and produces a corrected data set
+        without missingness. Makes use of R Factorization as listed in Mohan &
+        Pearl (2020).
+
+        Parameters:
+            var_names: set
+                The name of variables that are being considered to produce
+            data: pandas.DataFrame
+                A dataframe where var_names is a subset of the columns.
+
+
+
+            missingness_indicator_parents: dict
+                keys: missingness indicators (e.g. 'MI_x')
+                values: set(str)
+                    Parents of the missingness indicator (e.g. {'Y', 'Z'})
+    """
+    def __init__(
+        self,
+        data,
+        var_names,
+        marked_pattern_graph,
+        missing_indicator_prefix='MI_'
+    ):
+        self.data = data.copy()
+        self.var_names = var_names
+        self.marked_pattern_graph = marked_pattern_graph
+        self.missing_indicator_prefix = missing_indicator_prefix
+
+    def correct(self):
+        """
+            Returns: pandas.DataFrame
+                a corrected DataFrame with var_names as columns without any
+                missingness.
+        """
+
+        self.data['tmp_count'] = 0
+
+        # probas = self._fully_observed_relevant_data() \
+            # * self._constant() \
+            # * self._density_ratios()
+
+        probas = self._numerator() / self._denominator()
+
+        counts = probas / probas.sum() * self.data.shape[0]
+
+        collection = []
+
+        for index, count in counts.iterrows():
+            for i in range(int(count)):
+                collection.append(index)
+
+        df = pd.DataFrame(collection, columns=counts.index.names)
+
+        return df
+
+    def _numerator(self):
+        return self.data.dropna().groupby(self.marked_pattern_graph.nodes).count() \
+                / self.data.shape[0]
+
+    def _denominator(self):
+        prod = 1.0
+
+        missing_inds = set({})
+
+        for mi in self._missingness_indicators():
+            missing_inds = missing_inds.union(set({mi}))
+
+            parents_of_missingness_indicator = self._find_parents_of_missingness_indicator(mi)
+            mis_parents_of_mi = [self.missing_indicator_prefix + p for p in parents_of_missingness_indicator]
+
+            missing_inds = missing_inds.union(set(mis_parents_of_mi))
+
+            proba = self._proba(
+                var_values=[mi],
+                cond_var_values=list(set(parents_of_missingness_indicator).union(set(mis_parents_of_mi)))
+            )
+
+            prod *= proba
+
+        return prod.xs([False for i in range(len(missing_inds))], level=list(missing_inds))[['tmp_count']]
+
+    def _missingness_indicators(self):
+        if len(set(dir(self)).intersection(set(['missingness_indicators']))) > 0:
+            return self.missingness_indicators
+
+        self.missingness_indicators = self.marked_pattern_graph.missingness_indicators()
+
+        return self.missingness_indicators
+
+    def _proba(self, var_values, cond_var_values):
+        """
+            Parameters:
+                var_values: dict
+                    key: str
+                        name of a variable
+                    value: The value of the variable.
+
+                cond_var_values: dict
+                    key: str
+                        name of a variable in the conditioning set.
+                    value: The value of the variable in the conditioning set.
+
+        """
+        numerator = self.data.groupby(
+            list(set(var_values).union(cond_var_values))
+        ).count()
+
+        denominator = self.data.groupby(cond_var_values).count()
+
+        return numerator / denominator
+
+    def _find_parents_of_missingness_indicator(self, missingness_indicator):
+        parents = []
+
+        for from_node, to_node in self._marked_arrows():
+            if to_node == missingness_indicator:
+                parents.append(from_node)
+
+        return parents
+
+    def _mis_of_parents_of_mi(self, missingness_indicator):
+        parents = self._find_parents_of_missingness_indicator(
+            missingness_indicator
+        )
+
+        return [self.missing_indicator_prefix + parent for parent in parents]
+
+    def _marked_arrows(self):
+        return self.marked_pattern_graph.marked_arrows
+
+class PotentiallyExtraneousEdgesValidator(object):
+    def __init__(
+        self,
+        data,
+        marked_pattern_graph,
+        adjusted_data_generator,
+        is_conditionally_independent_func=sci_is_independent,
+        potentially_extraneous_edges=[],
+    ):
+        self.data = data
+        self.potentially_extraneous_edges = potentially_extraneous_edges
+        self.marked_pattern_graph = marked_pattern_graph
+        self.adjusted_data_generator = adjusted_data_generator
+        self.is_conditionally_independent_func = is_conditionally_independent_func
+
+    def edges_to_remove(self):
+        if len(self.potentially_extraneous_edges) == 0:
             return []
-        # for node_1, node_2 in tuple(self.marked_pattern_graph.undirected_edges):
-            # find_
 
+        extraneous_edges = []
 
-    def _not_a_missing_indicator(node):
-        return re.search(self.missingness_indicator_prefix, node) != None
+        for potentially_extraneous_edge in self.potentially_extraneous_edges:
+            var_name_1, var_name_2 = tuple(potentially_extraneous_edge)
+
+            cond_sets = conditioning_sets_satisfying_conditional_independence(
+                self.data,
+                var_name_1,
+                var_name_2,
+                is_conditionally_independent_func=self.is_conditionally_independent_func,
+                possible_conditioning_set_vars=[],
+                indegree=8,
+                only_find_one=True,
+                adjusted_data_generator=self.adjusted_data_generator,
+                marked_pattern_graph=self.marked_pattern_graph
+            )
+
+            if len(cond_sets) > 0:
+                extraneous_edges.append(potentially_extraneous_edge)
+
+        return extraneous_edges
+
+def adjusted_data_generator(data, var_names, marked_pattern_graph):
+    correction = DensityRatioWeightedCorrection(
+        data=data,
+        var_names=var_names,
+        marked_pattern_graph=marked_pattern_graph
+    )
+
+    return correction.correct()
+
+class MissingICStar(object):
+    def __init__(
+        self,
+        data,
+        missingness_indicator_prefix='MI_'
+    ):
+        self.data = data.merge(
+            data.isnull().add_prefix(missingness_indicator_prefix),
+            left_index=True,
+            right_index=True
+        )
+
+        self.orig_columns = data.columns
+
+        self.missingness_indicator_prefix = missingness_indicator_prefix
+
+    def predict(self):
+        skeleton_finder = SkeletonFinder(
+            var_names=self.orig_columns,
+            data=self.data
+        )
+
+        graph, cond_sets_satisfying_cond_indep = skeleton_finder.find()
+
+        self._add_missing_vars_to_marked_pattern_graph(graph)
+
+        DirectCausesOfMissingnessFinder(
+            data=self.data,
+            graph=graph,
+        ).find()
+
+        potentially_extraneous_edges_finder = PotentiallyExtraneousEdgesFinder(
+            data=self.data,
+            marked_pattern_graph=graph,
+            missingness_indicator_prefix=self.missingness_indicator_prefix
+        )
+
+        potentially_extraneous_edges = potentially_extraneous_edges_finder.find()
+
+        edges_to_remove = PotentiallyExtraneousEdgesValidator(
+            data=self.data,
+            adjusted_data_generator=adjusted_data_generator,
+            potentially_extraneous_edges=potentially_extraneous_edges,
+            marked_pattern_graph=graph
+        ).edges_to_remove()
