@@ -398,13 +398,43 @@ def sci_is_independent(data, vars_1=[], vars_2=[], conditioning_set=[]):
             >>>     conditioning_set=['z']
             >>> ) == True
     """
+
     testwise_deleted_data = \
         data[
             list(set(conditioning_set).union(set(vars_1)).union(set(vars_2)))
         ].dropna()
     sample_size = testwise_deleted_data.shape[0]
 
-    stochastic_complexity_score = sample_size \
+    score_1 = \
+        stochastic_complexity_score(
+            testwise_deleted_data=testwise_deleted_data,
+            vars_1=vars_1,
+            vars_2=vars_2,
+            conditioning_set=conditioning_set,
+            sample_size=sample_size
+        )
+
+    score_2 = \
+        stochastic_complexity_score(
+            testwise_deleted_data=testwise_deleted_data,
+            vars_1=vars_2,
+            vars_2=vars_1,
+            conditioning_set=conditioning_set,
+            sample_size=sample_size
+        )
+
+    score = min(score_1, score_2)
+
+    return score <= 0
+
+def stochastic_complexity_score(
+    testwise_deleted_data,
+    vars_1,
+    vars_2,
+    conditioning_set,
+    sample_size
+):
+    return sample_size \
         * conditional_mutual_information(
             data=testwise_deleted_data,
             vars_1=vars_1,
@@ -412,14 +442,12 @@ def sci_is_independent(data, vars_1=[], vars_2=[], conditioning_set=[]):
             conditioning_set=conditioning_set
         ) \
         + regret(
-                data=testwise_deleted_data,
-                variables=vars_1,
-                conditioning_set=conditioning_set
-              )  \
-            - regret(
-                data=testwise_deleted_data,
+            data=testwise_deleted_data,
+            variables=vars_1,
+            conditioning_set=conditioning_set
+        ) \
+        - regret(
+            data=testwise_deleted_data,
             variables=vars_1,
             conditioning_set=list(set(conditioning_set).union(vars_2))
         )
-
-    return stochastic_complexity_score <= 0
