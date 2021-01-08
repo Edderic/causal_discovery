@@ -1,4 +1,5 @@
 from graphviz import Digraph
+import re
 
 """
     viz
@@ -45,7 +46,8 @@ class MarkedPatternGraph(object):
         marked_arrows=[],
         unmarked_arrows=[],
         bidirected_edges=[],
-        undirected_edges=[]
+        undirected_edges=[],
+        missingness_indicator_prefix='MI_'
     ):
         assert len(nodes) > 0
 
@@ -54,6 +56,7 @@ class MarkedPatternGraph(object):
         self.unmarked_arrows = unmarked_arrows
         self.bidirected_edges = bidirected_edges
         self.undirected_edges = undirected_edges
+        self.missingness_indicator_prefix = missingness_indicator_prefix
 
     def add_nodes(self, nodes):
         self.nodes = list(set(self.nodes).union(set(nodes)))
@@ -83,4 +86,11 @@ class MarkedPatternGraph(object):
 
         return digraph
 
+    def missingness_indicators(self):
+        mi = []
 
+        for from_node, to_node in self.marked_arrows:
+            if re.search(self.missingness_indicator_prefix, to_node) != None:
+                mi.append(to_node)
+
+        return mi
