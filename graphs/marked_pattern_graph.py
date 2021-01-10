@@ -64,6 +64,9 @@ class MarkedPatternGraph(object):
     def add_marked_arrows(self, marked_arrows):
         self.marked_arrows = list(set(self.marked_arrows).union(set(marked_arrows)))
 
+    def remove_undirected_edges(self, edges_to_remove):
+        self.undirected_edges = list(set(self.undirected_edges) - set(self.edges_to_remove))
+
     def graphviz(self):
         digraph = Digraph(comment='marked_pattern')
 
