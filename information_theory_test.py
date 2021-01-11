@@ -2,7 +2,8 @@ import pandas as pd
 import numpy as np
 import pytest
 from pytest import approx
-from information_theory import entropy, conditional_entropy, multinomial_normalizing_sum, conditional_mutual_information, sci_is_independent
+from .information_theory import entropy, conditional_entropy, multinomial_normalizing_sum, conditional_mutual_information
+from .constraint_based.ci_tests.sci_is_independent import sci_is_independent
 def test_entropy_uniform_multinomial_with_4_possible_values_size_10000():
     size = 10000
     multinomials = np.random.multinomial(
