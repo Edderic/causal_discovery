@@ -1,7 +1,7 @@
 from .ci_tests.sci_is_independent import sci_is_independent
 from .misc import conditioning_sets_satisfying_conditional_independence
 
-class AddDirectCausesOfMissingnessToGraph(object):
+class DirectCausesOfMissingnessFinder(object):
     """
         Finds the direct causes of missingness.
 
@@ -22,8 +22,6 @@ class AddDirectCausesOfMissingnessToGraph(object):
         Paramters:
             data: pd.DataFrame
 
-            marked_pattern_graph: MarkedPatternGraph
-
             missingness_prefix: str. Defaults to "MI_"
                 This is the string that gets prefixed to a column that has
                 missingness.
@@ -43,23 +41,24 @@ class AddDirectCausesOfMissingnessToGraph(object):
     def __init__(
         self,
         data,
-        marked_pattern_graph,
         missingness_indicator_prefix='MI_',
         is_conditionally_independent_func=sci_is_independent,
         indegree=8
     ):
         self.data = data.copy()
         self.orig_data_cols = self.data.columns
-        self.marked_pattern_graph = marked_pattern_graph
         self.missingness_indicator_prefix = missingness_indicator_prefix
         self.is_conditionally_independent_func = is_conditionally_independent_func
         self.indegree = indegree
 
     def find(self):
         """
-            Returns a MarkedPatternGraph with direct edges to missingness
-            indicators, if applicable.
+            If applicable, returns a list of marked arrows. A marked arrow is a
+            tuple with two items. The first one is the from node and the last
+            one is the to node.
         """
+
+        marked_arrows = []
 
         for col_with_missingness in self._cols_with_missingness():
             missingness_col_name = self.missingness_indicator_prefix + col_with_missingness
@@ -85,11 +84,11 @@ class AddDirectCausesOfMissingnessToGraph(object):
                     )
 
                     if len(cond_sets) == 0:
-                        self.marked_pattern_graph.add_marked_arrows(
-                            [(potential_parent, missingness_col_name)]
+                        marked_arrows.append(
+                            (potential_parent, missingness_col_name)
                         )
 
-        return self.marked_pattern_graph
+        return marked_arrows
 
     def _orig_vars(self):
         return self.data.columns[
