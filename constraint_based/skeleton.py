@@ -1,6 +1,6 @@
 from .ci_tests.sci_is_independent import sci_is_independent
 from itertools import combinations
-from .misc import conditioning_sets_satisfying_conditional_independence
+from .misc import conditioning_sets_satisfying_conditional_independence, key_for_pair
 from ..graphs.marked_pattern_graph import MarkedPatternGraph
 
 class SkeletonFinder():
@@ -82,7 +82,7 @@ class SkeletonFinder():
                 undirected_edges.append(frozenset((var_name_1, var_name_2)))
             else:
                 cond_sets_satisfying_cond_indep[
-                    var_name_1 + ' _||_ ' + var_name_2
+                    key_for_pair([var_name_1, var_name_2])
                 ] = cond_sets
 
         marked_pattern = MarkedPatternGraph(

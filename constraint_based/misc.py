@@ -126,3 +126,10 @@ def conditioning_sets_satisfying_conditional_independence(
 
     return cond_set_combo_satisfies_cond_ind
 
+def key_for_pair(var_names):
+    """
+        Used for accessing the cond_sets_that_satisfy_cond_indep.
+    """
+    var_names.sort()
+    return var_names[0] + ' _||_ ' + var_names[1]
+
