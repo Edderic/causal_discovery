@@ -12,6 +12,25 @@ import re
     - MarkedPatternGraph
 """
 
+def get_nodes_from_edges(edges):
+    set_collection = frozenset({})
+    _edges = list(edges)
+
+    for edge in _edges:
+        set_collection = set_collection.union(frozenset(edge))
+
+    return set_collection
+
+def get_nodes_adj_to_node(edges, node):
+    collection = set({})
+    _edges = list(edges)
+
+    for edge in _edges:
+        if set(edge).intersection(set({node})) != set({}):
+            collection = collection.union(edge)
+
+    return collection - set({node})
+
 class MarkedPatternGraph(object):
     """
         A Marked Pattern represents a set of DAGs. This class uses the
@@ -97,3 +116,4 @@ class MarkedPatternGraph(object):
                 mi.append(to_node)
 
         return mi
+
