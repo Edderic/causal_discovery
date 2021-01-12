@@ -9,7 +9,6 @@ def test_mcar():
     )
 
     potentially_extraneous_edges_finder = PotentiallyExtraneousEdgesFinder(
-        data=pd.DataFrame(),
         marked_pattern_graph=marked_pattern_graph
     )
 
@@ -32,7 +31,6 @@ def test_mar():
     )
 
     potentially_extraneous_edges_finder = PotentiallyExtraneousEdgesFinder(
-        data=pd.DataFrame(),
         marked_pattern_graph=marked_pattern_graph
     )
 
@@ -54,7 +52,6 @@ def test_two_causes_MI_collider():
     )
 
     potentially_extraneous_edges_finder = PotentiallyExtraneousEdgesFinder(
-        data=pd.DataFrame(),
         marked_pattern_graph=marked_pattern_graph
     )
 
@@ -75,7 +72,6 @@ def test_marked_arrow_exists_with_no_MI():
     )
 
     potentially_extraneous_edges_finder = PotentiallyExtraneousEdgesFinder(
-        data=pd.DataFrame(),
         marked_pattern_graph=marked_pattern_graph
     )
 
@@ -103,7 +99,6 @@ def test_firing_squad_example():
     )
 
     potentially_extraneous_edges_finder = PotentiallyExtraneousEdgesFinder(
-        data=pd.DataFrame(),
         marked_pattern_graph=marked_pattern_graph
     )
 

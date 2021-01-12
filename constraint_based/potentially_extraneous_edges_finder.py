@@ -50,7 +50,6 @@ class PotentiallyExtraneousEdgesFinder(object):
     """
     def __init__(
         self,
-        data,
         marked_pattern_graph,
         missingness_indicator_prefix = "MI_"
     ):
