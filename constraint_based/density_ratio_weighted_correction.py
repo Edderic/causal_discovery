@@ -46,7 +46,7 @@ class DensityRatioWeightedCorrection(object):
         collection = []
 
         for index, count in counts.iterrows():
-            for i in range(int(count)):
+            for i in range(int(count['tmp_count'])):
                 collection.append(index)
 
         df = pd.DataFrame(collection, columns=counts.index.names)

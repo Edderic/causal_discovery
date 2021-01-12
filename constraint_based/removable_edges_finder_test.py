@@ -8,7 +8,7 @@ def test_cond_on_collider(df_X_and_Y_cause_Z_and_Z_cause_MI_X):
 
     # extraneous edge x-y
     graph = MarkedPatternGraph(
-        nodes=['x', 'y', 'z', 'MI_x', 'MI_y', 'MI_z'],
+        nodes=['x', 'y', 'z', 'MI_x'],
         undirected_edges=[set({'x', 'y'}), set({'x', 'z'}), set({'y', 'z'})],
         marked_arrows=[('z', 'MI_x')]
     )

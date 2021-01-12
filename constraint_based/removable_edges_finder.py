@@ -26,8 +26,14 @@ class RemovableEdgesFinder(object):
         data_correction=DensityRatioWeightedCorrection,
         is_conditionally_independent_func=sci_is_independent,
         potentially_extraneous_edges=[],
+        missingness_indicator_prefix='MI_'
     ):
-        self.data = data
+        import pdb; pdb.set_trace()
+        self.data = data.merge(
+            data.isnull().add_prefix(missingness_indicator_prefix),
+            left_index=True,
+            right_index=True
+        )
         self.potentially_extraneous_edges = potentially_extraneous_edges
         self.marked_pattern_graph = marked_pattern_graph
         self.data_correction = data_correction
@@ -39,6 +45,7 @@ class RemovableEdgesFinder(object):
 
         extraneous_edges = []
 
+        import pdb; pdb.set_trace()
         for potentially_extraneous_edge in self.potentially_extraneous_edges:
             var_name_1, var_name_2 = tuple(potentially_extraneous_edge)
 
