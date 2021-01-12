@@ -45,7 +45,12 @@ class DirectCausesOfMissingnessFinder(object):
         is_conditionally_independent_func=sci_is_independent,
         indegree=8
     ):
-        self.data = data.copy()
+        self.data = data.merge(
+            data.isnull().add_prefix(missingness_indicator_prefix),
+            left_index=True,
+            right_index=True
+        )
+
         self.orig_data_cols = self.data.columns
         self.missingness_indicator_prefix = missingness_indicator_prefix
         self.is_conditionally_independent_func = is_conditionally_independent_func

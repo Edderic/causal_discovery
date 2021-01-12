@@ -1,6 +1,6 @@
 import numpy as np
 import pytest
-from .skeleton import SkeletonFinder
+from .skeleton_finder import SkeletonFinder
 from .direct_causes_of_missingness_finder import DirectCausesOfMissingnessFinder
 
 def test_2_multinom_RVs_MCAR(
@@ -18,11 +18,11 @@ def test_2_multinom_RVs_MCAR(
         var_names=df.columns,
     )
 
-    graph, cond_sets_satisfying_cond_indep, df_with_mi = \
+    graph, cond_sets_satisfying_cond_indep = \
         skeleton_finder.find()
 
     direct_causes_of_missingness_finder = DirectCausesOfMissingnessFinder(
-        data=df_with_mi
+        data=df
     )
 
     marked_arrows = direct_causes_of_missingness_finder.find()
@@ -43,11 +43,11 @@ def test_2_multinom_RVs_MAR(
         var_names=df.columns,
     )
 
-    graph, cond_sets_satisfying_cond_indep, df_with_mi = \
+    graph, cond_sets_satisfying_cond_indep = \
         skeleton_finder.find()
 
     direct_causes_of_missingness_finder = DirectCausesOfMissingnessFinder(
-        data=df_with_mi
+        data=df
     )
 
     marked_arrows = direct_causes_of_missingness_finder.find()
@@ -68,11 +68,11 @@ def test_3_multinom_RVs_MAR(
         var_names=df.columns,
     )
 
-    graph, cond_sets_satisfying_cond_indep, df_with_mi = \
+    graph, cond_sets_satisfying_cond_indep = \
         skeleton_finder.find()
 
     direct_causes_of_missingness_finder = DirectCausesOfMissingnessFinder(
-        data=df_with_mi
+        data=df
     )
 
     marked_arrows = direct_causes_of_missingness_finder.find()
@@ -91,7 +91,7 @@ def test_long_chains_collider_bias_without_MI(
         var_names=df.columns,
     )
 
-    graph, cond_sets_satisfying_cond_indep, df_with_mi = skeleton_finder.find()
+    graph, cond_sets_satisfying_cond_indep = skeleton_finder.find()
 
     # we expect b-d in this intermediate stage. b-d is spurious, due to
     # collider bias.
@@ -106,7 +106,7 @@ def test_long_chains_collider_bias_without_MI(
     assert frozenset(graph.undirected_edges) == expected_undirected_edges
 
     direct_causes_of_missingness_finder = DirectCausesOfMissingnessFinder(
-        data=df_with_mi
+        data=df
     )
 
     marked_arrows = direct_causes_of_missingness_finder.find()
@@ -127,7 +127,7 @@ def test_long_chains_collider_bias_with_MI(
         only_find_one=True
     )
 
-    graph, cond_sets_satisfying_cond_indep, df = skeleton_finder.find()
+    graph, cond_sets_satisfying_cond_indep = skeleton_finder.find()
 
     # we expect b-d in this intermediate stage. b-d is spurious, due to
     # collider bias.
