@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from .skeleton import SkeletonFinder
+from .skeleton_finder import SkeletonFinder
 
 def test_2_multinom_RVs(df_2_multinomial_indep_RVs):
     skeleton_finder = SkeletonFinder(
@@ -8,7 +8,7 @@ def test_2_multinom_RVs(df_2_multinomial_indep_RVs):
         var_names=['x', 'y'],
     )
 
-    graph, cond_sets_satisfying_cond_indep, df = skeleton_finder.find()
+    graph, cond_sets_satisfying_cond_indep = skeleton_finder.find()
 
     assert graph.undirected_edges == []
     assert cond_sets_satisfying_cond_indep['x _||_ y'] == [set()]
@@ -19,7 +19,7 @@ def test_skeleton_finder_X_causes_Y(df_X_causes_Y):
         var_names=['x', 'y'],
     )
 
-    graph, cond_sets_satisfying_cond_indep, df  = skeleton_finder.find()
+    graph, cond_sets_satisfying_cond_indep = skeleton_finder.find()
 
     assert graph.undirected_edges == [set(('x', 'y'))]
     assert cond_sets_satisfying_cond_indep == {}
@@ -32,7 +32,7 @@ def test_skeleton_finder_Z_causes_X_and_Y(df_Z_causes_X_and_Y):
         var_names=var_names,
     )
 
-    graph, cond_sets_satisfying_cond_indep, df = skeleton_finder.find()
+    graph, cond_sets_satisfying_cond_indep = skeleton_finder.find()
 
     assert graph.nodes == var_names
     assert graph.undirected_edges == [set(('x', 'z')), set(('y', 'z'))]
