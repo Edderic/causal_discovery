@@ -18,7 +18,7 @@
 
 import numpy as np
 
-def entropy(data, variables=[]):
+def entropy(data, variables=[], base_2=True):
     """
         Computes Shannon entropy.
 
@@ -68,7 +68,12 @@ def entropy(data, variables=[]):
     variable_counts = data.groupby(list(variables)).count()
     probas = variable_counts / total_count
 
-    return -(probas * np.log2(probas)).sum()[count_col_name]
+    if base_2:
+        log_func = np.log2
+    else:
+        log_func = np.log
+
+    return -(probas * log_func(probas)).sum()[count_col_name]
 
 
 def conditional_entropy(data, conditioning_set=[], variables=[]):
@@ -255,8 +260,7 @@ def conditional_mutual_information(data, vars_1, vars_2, conditioning_set=[]):
         conditioning_set=list(set(conditioning_set).union(vars_2))
     )
 
-
-def multinomial_normalizing_sum(num_classes, sample_size):
+def multinomial_normalizing_sum(num_classes, sample_size, d=10):
     """
         Implementation of a fast algorithm for computing the multinomial
         normalizing sum. This is used in the Normalized Maximum Likelihood
@@ -272,20 +276,21 @@ def multinomial_normalizing_sum(num_classes, sample_size):
                 Number of classes
             sample_size: int
                 Sample size
+            d: Number of digits (for precision)
+
     """
-    d = 10
     b = 1
     summation = 1
 
     bound = int(np.ceil(2 + np.sqrt(-2 * sample_size * np.log2(2 * 10**(-d) - 100**(-d)))))
 
-    for k in range(1, bound):
-        b = (num_classes - k + 1) / sample_size * b
+    for k in range(1, bound + 1):
+        b = (sample_size - k + 1) / sample_size * b
         summation = summation + b
 
     old_sum = 1
 
-    for j in range(3,num_classes):
+    for j in range(3,num_classes+1):
         new_sum = summation + (sample_size * old_sum) / (j-2)
         old_sum = summation
         summation = new_sum
@@ -298,12 +303,12 @@ def regret(data, variables=[], conditioning_set=[]):
     data_copy = data.copy()
     data_copy['tmp counts'] = 0
 
-    counts = data_copy.groupby(variables).count()
+    num_classes = data_copy.groupby(variables).count().shape[0]
 
     if len(conditioning_set) == 0:
-        return np.log2(
+        return np.log(
             multinomial_normalizing_sum(
-                num_classes=counts.shape[0],
+                num_classes=num_classes,
                 sample_size=data.shape[0]
             )
         )
@@ -316,9 +321,9 @@ def regret(data, variables=[], conditioning_set=[]):
     summation = 0
 
     for indices, count in conditioning_set_counts.iterrows():
-        summation += np.log2(
+        summation += np.log(
             multinomial_normalizing_sum(
-                num_classes=counts.shape[0],
+                num_classes=num_classes,
                 sample_size=count
             )
         )
@@ -332,20 +337,21 @@ def stochastic_complexity_score(
     conditioning_set,
     sample_size
 ):
-    return sample_size \
-        * conditional_mutual_information(
+    # TODO: add back sample size after debugging?
+    # import pdb; pdb.set_trace()
+    return sample_size * \
+        conditional_mutual_information(
             data=testwise_deleted_data,
             vars_1=vars_1,
             vars_2=vars_2,
             conditioning_set=conditioning_set
-        ) \
-        + regret(
+        ) + \
+        regret(
             data=testwise_deleted_data,
             variables=vars_1,
             conditioning_set=conditioning_set
-        ) \
-        - regret(
+        ) - \
+        regret(
             data=testwise_deleted_data,
             variables=vars_1,
-            conditioning_set=list(set(conditioning_set).union(vars_2))
-        )
+            conditioning_set=list(set(conditioning_set).union(vars_2)))

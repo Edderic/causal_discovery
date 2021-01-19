@@ -4,14 +4,18 @@ import pandas as pd
 
 @pytest.fixture
 def multinomial_RV():
-    def _setup(size=10000):
+    def _setup(
+        pvals=[0.25,
+            0.25,
+            0.25,
+            0.25
+        ],
+        size=10000
+    ):
         multinomial = np.random.multinomial(
-                n=1,
-                pvals=[0.25,
-                    0.25,
-                    0.25,
-                    0.25],
-                size=size)
+            n=1,
+            pvals=pvals,
+            size=size)
 
         return multinomial[:, 0] \
                 + multinomial[:, 1] * 2 \
@@ -67,7 +71,7 @@ def df_Z_causes_X_and_Y(multinomial_RV):
 @pytest.fixture
 def df_X_and_Y_cause_Z(multinomial_RV):
     def _setup(size=10000, proba_noise=0.1):
-        x = multinomial_RV(size=size)
+        x = multinomial_RV(size=size, pvals=[0.2,0.3,0.4,0.1])
         y = multinomial_RV(size=size)
         noise = np.random.binomial(n=1, p=1-proba_noise, size=size)
 
@@ -89,11 +93,7 @@ def df_X_and_Y_cause_Z_and_Z_cause_MI_X(df_X_and_Y_cause_Z):
 
         df.at[missingness_indices[0], 'x'] = np.nan
 
-        return df.merge(
-            df.isnull().add_prefix('MI_'),
-            left_index=True,
-            right_index=True
-        )
+        return df
 
     yield _setup
 
@@ -164,7 +164,7 @@ def df_long_chains_and_collider_without_MI(multinomial_RV):
 def df_long_chains_and_collider_with_MI(df_long_chains_and_collider_without_MI):
     def _setup(size=10000, proba_noise=0.1):
         df = df_long_chains_and_collider_without_MI(size=size, proba_noise=proba_noise)
-        MI_a = df['c'] * np.random.binomial(n=1, p=1-proba_noise, size=size)
+        MI_a = df['c'] * np.random.binomial(n=1, p=proba_noise, size=size)
 
         missingness_indices = np.where(MI_a == 1)
 

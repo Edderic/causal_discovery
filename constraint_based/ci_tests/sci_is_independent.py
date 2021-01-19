@@ -1,4 +1,5 @@
 from ...information_theory import stochastic_complexity_score
+from ...information_theory import conditional_mutual_information
 
 def sci_is_independent(data, vars_1=[], vars_2=[], conditioning_set=[]):
     """
