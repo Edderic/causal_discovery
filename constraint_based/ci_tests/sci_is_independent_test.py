@@ -141,3 +141,23 @@ def test_Z_causes_X_and_Y(
     }
 
     assert sci_is_independent(**params_2) == False
+
+def test_spurious_edge(
+    df_long_chains_and_collider_with_MI
+):
+    size = 10000
+
+    df = df_long_chains_and_collider_with_MI(size=size)
+
+    params = {
+       "data": df,
+       "vars_1": ['b'],
+       "vars_2": ['d'],
+       "conditioning_set": []
+    }
+
+    # we expect b-d to be a spurious edge because we're implicitly conditioning
+    # on the collider MI_b
+
+    assert sci_is_independent(**params) == False
+
