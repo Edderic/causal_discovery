@@ -6,12 +6,8 @@ def bmd_is_independent(
     vars_1=[],
     vars_2=[],
     conditioning_set=[],
-    threshold=1
+    threshold=0.99
 ):
-    # If conditioning set has at least one item,
-    # vars_1 _||_ vars_2 | conditioning_set
-
-    # See if P(vars_1 | conditioning_set) = P(vars_1 | conditioning_set, vars_2)
     var_1 = vars_1[0]
     var_2 = vars_2[0]
     _data = data.copy()
@@ -106,7 +102,6 @@ def posterior(data, variable, conditioning_set={}, size=1000):
     for key, val in conditioning_set.items():
         data_copy = data_copy[data_copy[key] == val]
 
-    # TODO: what if it's deterministic?
     counts = data_copy.groupby(variable).count()
 
     bdeu_prior = np.ones(var_num_classes) / var_num_classes
@@ -116,29 +111,27 @@ def posterior(data, variable, conditioning_set={}, size=1000):
         counts=counts
     )
 
-    return np.random.dirichlet(
-        tuple((bdeu_prior + data_count)),
-        size=size
-    )
+    return np.random.dirichlet( tuple((bdeu_prior + data_count)), size=size)
 
-def is_dependent(p1, p2, threshold):
-    acceptable_1 = (p1 > p2).sum(axis=0) / p1.shape[0] >= threshold
-    acceptable_2 = (p2 > p1).sum(axis=0) / p1.shape[0] >= threshold
+def is_dependent(p1, p2, proba_threshold, subt_cutoff=0.01, div_cutoff=1.5):
+    acceptable_1 = (p1 - p2 > subt_cutoff).sum(axis=0) / p1.shape[0] >= proba_threshold
+    acceptable_2 = (p2 - p1 > subt_cutoff).sum(axis=0) / p1.shape[0] >= proba_threshold
+
+    # import matplotlib.pyplot as plt
+
+    # fig = plt.figure(figsize=(10,10))
+    # ax_1 = fig.add_subplot(311)
+    # ax_2 = fig.add_subplot(312)
+    # ax_3 = fig.add_subplot(313)
+
+    # pd.DataFrame(p1).plot.hist(bins=100,alpha=0.5, ax=ax_1, xlim=(0,1))
+    # pd.DataFrame(p2).plot.hist(bins=100,alpha=0.5, ax=ax_2, xlim=(0,1))
+    # pd.DataFrame(p1 - p2).plot.hist(bins=100,alpha=0.5, ax=ax_3)
+    # plt.tight_layout()
+#
+    # fig.savefig('test2.png')
 
     # import pdb; pdb.set_trace()
-    # import matplotlib.pyplot as plt
-#
-    # fig = plt.figure()
-    # ax_1 = fig.add_subplot(111)
-    # ax_2 = fig.add_subplot(211)
-    # ax_3 = fig.add_subplot(311)
-#
-    # pd.DataFrame(p1).plot.hist(bins=100,alpha=0.5, ax=ax_1)
-    # pd.DataFrame(p2).plot.hist(bins=100,alpha=0.5, ax=ax_2)
-    # pd.DataFrame(p1 / p2).plot.hist(bins=100,alpha=0.5, ax=ax_3)
-#
-    # fig.savefig('test1.png')
-
 
     return (acceptable_1 + acceptable_2).sum() > 0
 

@@ -19,9 +19,6 @@ def test_uniform_multinomial_with_4_possible_values_size_10000(
     params["data"] = df_2_multinomial_indep_RVs(size=1000)
     assert bmd_is_independent(**params) == True
 
-    params["data"] = df_2_multinomial_indep_RVs(size=100)
-    assert bmd_is_independent(**params) == True
-
 def test_3_indep_small_100():
     x = np.random.binomial(n=1, p=0.5, size=100)
     y = np.random.binomial(n=1, p=0.5, size=100)
@@ -125,10 +122,11 @@ def test_Z_causes_X_and_Y(
 
     assert bmd_is_independent(**params_2) == False
 
+@pytest.mark.focus
 def test_spurious_edge(
     df_long_chains_and_collider_with_MI
 ):
-    size = 10000
+    size = 100000
 
     df = df_long_chains_and_collider_with_MI(size=size)
 
@@ -140,6 +138,25 @@ def test_spurious_edge(
     }
 
     # we expect b-d to be a spurious edge because we're implicitly conditioning
+    # on the collider MI_b
+
+    assert bmd_is_independent(**params) == False
+
+def test_spurious_edge_2(
+    df_chain_and_collider_with_MI
+):
+    size = 100000
+
+    df = df_chain_and_collider_with_MI(size=size)
+
+    params = {
+       "data": df,
+       "vars_1": ['a'],
+       "vars_2": ['c'],
+       "conditioning_set": []
+    }
+
+    # we expect a-c to be a  spurious edge because we're implicitly conditioning
     # on the collider MI_b
 
     assert bmd_is_independent(**params) == False
