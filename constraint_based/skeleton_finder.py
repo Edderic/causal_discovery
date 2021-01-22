@@ -1,4 +1,4 @@
-from .ci_tests.sci_is_independent import sci_is_independent
+from .ci_tests.bmd_is_independent import bmd_is_independent
 from itertools import combinations
 from .misc import conditioning_sets_satisfying_conditional_independence, key_for_pair
 from ..graphs.marked_pattern_graph import MarkedPatternGraph
@@ -20,7 +20,7 @@ class SkeletonFinder():
         self,
         var_names,
         data,
-        is_conditionally_independent_func=sci_is_independent,
+        is_conditionally_independent_func=bmd_is_independent,
         indegree=8,
         missing_indicator_prefix='MI_',
         only_find_one=False
@@ -74,7 +74,6 @@ class SkeletonFinder():
                 var_name_2=var_name_2,
                 is_conditionally_independent_func=self.is_conditionally_independent_func,
                 possible_conditioning_set_vars=possible_conditioning_set_vars,
-                indegree=self.indegree,
                 only_find_one=self.only_find_one
             )
 
