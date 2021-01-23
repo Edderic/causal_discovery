@@ -7,7 +7,7 @@ from ..graphs.marked_pattern_graph import MarkedPatternGraph
 def test_2_multinom_RVs_MCAR(
     df_2_multinomial_indep_RVs
 ):
-    size = 1000
+    size = 2000
     df = df_2_multinomial_indep_RVs(size=size)
 
     missingness_of_x = np.random.binomial(n=1, p=0.3, size=size)
