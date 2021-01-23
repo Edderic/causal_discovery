@@ -21,7 +21,6 @@ def test_long_chains_collider_bias_without_MI(
         vars_2=['d']
     )
 
-
     assert indep == True
 
 def test_uniform_multinomial_with_4_possible_values_size_10000(
@@ -161,3 +160,18 @@ def test_spurious_edge(
 
     assert sci_is_independent(**params) == False
 
+def test_3_multinom_RVs_MAR(
+    df_Z_causes_X_Y_and_X_Z_causes_MI_Y
+):
+    size = 10000
+
+    df = df_Z_causes_X_Y_and_X_Z_causes_MI_Y(size=size)
+
+    params = {
+       "data": df,
+       "vars_1": ['x'],
+       "vars_2": ['y'],
+       "conditioning_set": ['z']
+    }
+
+    assert sci_is_independent(**params) == True
