@@ -61,7 +61,6 @@ def test_long_chains_collider_bias_without_MI(
 
     assert frozenset(graph.undirected_edges) == expected_undirected_edges
 
-@pytest.mark.focus
 def test_long_chains_collider_bias_with_MI(
     df_long_chains_and_collider_with_MI
 ):
@@ -92,7 +91,7 @@ def test_long_chains_collider_bias_with_MI(
 def test_chain_and_collider_without_MI(
     df_chain_and_collider_without_MI
 ):
-    size = 100000
+    size = 5000
 
     df = df_chain_and_collider_without_MI(size=size)
     skeleton_finder = SkeletonFinder(
@@ -115,7 +114,7 @@ def test_chain_and_collider_without_MI(
 def test_chain_and_collider_with_MI(
     df_chain_and_collider_with_MI
 ):
-    size = 100000
+    size = 6000
 
     df = df_chain_and_collider_with_MI(size=size)
     skeleton_finder = SkeletonFinder(
@@ -138,3 +137,21 @@ def test_chain_and_collider_with_MI(
     })
 
     assert frozenset(graph.undirected_edges) == expected_undirected_edges
+
+def test_3_multinom_RVs_MAR(
+    df_Z_causes_X_Y_and_X_Z_causes_MI_Y
+):
+    size = 1000
+
+    df = df_Z_causes_X_Y_and_X_Z_causes_MI_Y(size=size)
+
+    skeleton_finder = SkeletonFinder(
+        data=df,
+        var_names=df.columns,
+    )
+
+    graph, cond_sets_satisfying_cond_indep = \
+        skeleton_finder.find()
+
+    assert set(graph.nodes).intersection(set(['x', 'y', 'MI_x']))
+    assert set(graph.undirected_edges) == frozenset({frozenset(('x', 'z')), frozenset(('z', 'y')), frozenset(('x', 'y'))})
