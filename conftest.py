@@ -64,7 +64,6 @@ def df_Z_causes_X_and_Y(multinomial_RV):
 
         y = (z == 2) & np.random.binomial(n=1, p=1-proba_noise, size=size)
         x = ((z == 1) | (z == 3)) & np.random.binomial(n=1, p=1-proba_noise, size=size)
-
         return pd.DataFrame({'x': x, 'y': y, 'z': z})
     yield _setup
 
@@ -118,6 +117,14 @@ def df_X_Y_indep_Y_causes_MI_X(df_2_multinomial_indep_RVs):
 
 @pytest.fixture
 def df_Z_causes_X_Y_and_X_Z_causes_MI_Y(df_Z_causes_X_and_Y):
+    #          Z
+    #         /|\
+    #        / | \
+    #       v  |  v
+    #       X  |  Y
+    #       \  |
+    #        v v
+    #        MI_Y
     def _setup(size=10000, proba_noise=0.1):
         df = df_Z_causes_X_and_Y(size=size, proba_noise=proba_noise)
 
@@ -136,16 +143,25 @@ def df_Z_causes_X_Y_and_X_Z_causes_MI_Y(df_Z_causes_X_and_Y):
 
 @pytest.fixture
 def df_long_chains_and_collider_without_MI(multinomial_RV):
-    def _setup(size=10000, proba_noise=0.7):
+    #
+    #   A         E
+    #    \       /
+    #     v     v
+    #     B     D
+    #     \     /
+    #      \   /
+    #       v v
+    #        C
+    #
+    def _setup(size=10000, proba_noise=0.5):
         a = multinomial_RV(size=size)
         e = multinomial_RV(size=size)
 
-        b = (pd.Series(a).isin([1,2])) & np.random.binomial(n=1, p=proba_noise - 0.2, size=size)
-        d = (pd.Series(e).isin([2,3])) & np.random.binomial(n=1, p=proba_noise + 0.2, size=size)
+        b = (pd.Series(a).isin([1,2])) & np.random.binomial(n=1, p=proba_noise - 0.15, size=size)
+        d = (pd.Series(e).isin([2,3])) & np.random.binomial(n=1, p=proba_noise + 0.15, size=size)
 
         # collider
         c = b & d
-        # & np.random.binomial(n=1, p=proba_noise, size=size)
 
         df = pd.DataFrame(
             {
@@ -163,13 +179,89 @@ def df_long_chains_and_collider_without_MI(multinomial_RV):
 
 @pytest.fixture
 def df_long_chains_and_collider_with_MI(df_long_chains_and_collider_without_MI):
-    def _setup(size=10000, proba_noise=0.4):
+    #
+    #   A         E
+    #    \       /
+    #     v     v
+    #     B     D
+    #     \     /
+    #      \   /
+    #       v v
+    #        C
+    #        |
+    #        v
+    #       MI_b
+    #
+    def _setup(size=10000, proba_noise=0.5):
         df = df_long_chains_and_collider_without_MI(size=size, proba_noise=proba_noise)
         MI_b = df['c'] * np.random.binomial(n=1, p=proba_noise, size=size)
 
         missingness_indices = np.where(MI_b == 1)
 
         df.at[missingness_indices[0], 'b'] = np.nan
+
+        return df
+
+    yield _setup
+
+@pytest.fixture
+def df_chain_and_collider_without_MI(multinomial_RV):
+    #
+    #    A -> B -> C
+    #     \       /
+    #      \     /
+    #       \   /
+    #        v v
+    #         D
+    #
+    def _setup(size=10000, proba_noise=0.8):
+        a = np.random.binomial(n=1, p=0.8, size=size)
+        b_val = np.random.binomial(n=1, p=0.7, size=size)
+
+        b = np.random.binomial(n=1, p=0.5, size=size)
+        copy_bval_loc = np.where(b_val == 1)[0]
+        b[copy_bval_loc] = a[copy_bval_loc]
+
+        c_val = np.random.binomial(n=1, p=0.8, size=size)
+        c = np.random.binomial(n=1, p=0.8, size=size)
+        copy_c_val_loc = np.where(c_val == 1)[0]
+        c[copy_c_val_loc] = b[copy_c_val_loc]
+
+        d = (c==0) & (a==1)
+
+        df = pd.DataFrame({
+            'a': a,
+            'b': b,
+            'c': c,
+            'd': d,
+        })
+
+        return df
+
+    yield _setup
+@pytest.fixture
+def df_chain_and_collider_with_MI(df_chain_and_collider_without_MI):
+    #
+    #    A -> B -> C
+    #     \       /
+    #      \     /
+    #       \   /
+    #        v v
+    #         D
+    #         |
+    #         v
+    #        M_a
+    #
+    def _setup(size=10000, proba_noise=0.8):
+        df = df_chain_and_collider_without_MI(
+            size=size, proba_noise=proba_noise
+        )
+
+        MI_a = df['d'] * np.random.binomial(n=1, p=0.3, size=size)
+
+        missingness_indices = np.where(MI_a == 1)
+
+        df.at[missingness_indices[0], 'a'] = np.nan
 
         return df
 
