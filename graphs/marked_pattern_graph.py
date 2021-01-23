@@ -31,6 +31,26 @@ def get_nodes_adj_to_node(edges, node):
 
     return collection - set({node})
 
+def get_common_adj_nodes(edges, node_1, node_2):
+    nodes_adj_to_node_1 = get_nodes_adj_to_node(
+        edges=edges,
+        node=node_1
+    )
+
+    nodes_adj_to_node_2 = get_nodes_adj_to_node(
+        edges=edges,
+        node=node_2,
+    )
+
+    # if node_1 and node_2 are adjacent, exit early.
+    if set({node_1, node_2})\
+        .intersection(
+            nodes_adj_to_node_1.union(nodes_adj_to_node_2)
+        ) != set({}):
+        return []
+
+    return nodes_adj_to_node_1.intersection(nodes_adj_to_node_2)
+
 class MarkedPatternGraph(object):
     """
         A Marked Pattern represents a set of DAGs. This class uses the

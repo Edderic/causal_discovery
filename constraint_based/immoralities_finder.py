@@ -1,5 +1,5 @@
 from ..graphs.marked_pattern_graph import get_nodes_from_edges
-from ..graphs.marked_pattern_graph import get_nodes_adj_to_node
+from ..graphs.marked_pattern_graph import get_common_adj_nodes
 from .misc import key_for_pair
 
 class ImmoralitiesFinder(object):
@@ -30,32 +30,23 @@ class ImmoralitiesFinder(object):
 
         unmarked_arrows = set({})
 
+
         for node_1 in undirected_nodes:
             for node_2 in undirected_nodes:
                 if node_1 == node_2:
                     continue
 
-                nodes_adj_to_node_1 = get_nodes_adj_to_node(
-                    edges=self.marked_pattern_graph.undirected_edges,
-                    node=node_1
+                edges_for_getting_nodes_adj_to_node = self\
+                    .marked_pattern_graph\
+                    .undirected_edges
+
+                common_adjacent_nodes = get_common_adj_nodes(
+                    edges=edges_for_getting_nodes_adj_to_node,
+                    node_1=node_1,
+                    node_2=node_2
                 )
 
-                nodes_adj_to_node_2 = get_nodes_adj_to_node(
-                    edges=self.marked_pattern_graph.undirected_edges,
-                    node=node_2,
-                )
-
-                # if node_1 and node_2 are adjacent, continue.
-                if set({node_1, node_2}).intersection(nodes_adj_to_node_1.union(nodes_adj_to_node_2)) != set({}):
-                    continue
-
-                common_adjacent_nodes = \
-                    nodes_adj_to_node_1\
-                    .intersection(nodes_adj_to_node_2)
-
-                _common_adjacent_nodes = list(common_adjacent_nodes)
-
-                for common_adj_node in _common_adjacent_nodes:
+                for common_adj_node in common_adjacent_nodes:
                     try:
                         if self.\
                                 _get_cond_set_vars_for_pair(
