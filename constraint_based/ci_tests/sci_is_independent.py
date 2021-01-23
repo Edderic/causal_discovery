@@ -99,7 +99,7 @@ def sci_is_independent(data, vars_1=[], vars_2=[], conditioning_set=[]):
             sample_size=sample_size
         )
 
-    score = min(score_1, score_2)
+    score = max(score_1, score_2)
 
     return score <= 0
 
