@@ -10,6 +10,15 @@ class ImmoralitiesFinder(object):
 
         Parameters:
             marked_pattern_graph: graphs.MarkedPatternGraph
+            cond_sets_satisfying_cond_indep: dict
+                key: str
+                    Two variables that are conditionally independent.
+                    Ex: "A _||_ B", which stands for A is independent of B
+                values: list of sets.
+                    Conditioning sets that make the two pairs of variables
+                    independent.
+                    Ex: set({}) for the empty set
+                    Ex: set({'C'})
     """
     def __init__(self, marked_pattern_graph, cond_sets_satisfying_cond_indep):
         self.marked_pattern_graph = marked_pattern_graph
