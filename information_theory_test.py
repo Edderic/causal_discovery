@@ -4,6 +4,7 @@ import pytest
 from pytest import approx
 from .information_theory import entropy, conditional_entropy, multinomial_normalizing_sum, conditional_mutual_information
 from .constraint_based.ci_tests.sci_is_independent import sci_is_independent
+
 def test_entropy_uniform_multinomial_with_4_possible_values_size_10000():
     size = 10000
     multinomials = np.random.multinomial(
@@ -21,7 +22,7 @@ def test_entropy_uniform_multinomial_with_4_possible_values_size_10000():
 
     df = pd.DataFrame({'x': x})
 
-    assert entropy(data=df, variables=['x']) == approx(2, abs=0.01)
+    assert entropy(data=df, variables=['x'], base_2=True) == approx(2, abs=0.01)
 
 def test_cond_ent_uniform_multinomial_with_4_possible_values(
     df_2_multinomial_indep_RVs
@@ -29,7 +30,8 @@ def test_cond_ent_uniform_multinomial_with_4_possible_values(
     assert conditional_entropy(
                data=df_2_multinomial_indep_RVs(size=10000),
                variables=['x', 'y'],
-               conditioning_set=['y']
+               conditioning_set=['y'],
+               base_2=True
            ) == approx(2, abs=0.01)
 
 def test_cond_mut_inf_uniform_multinomial_with_4_possible_values_size_10000(

@@ -18,7 +18,7 @@
 
 import numpy as np
 
-def entropy(data, variables=[], base_2=True):
+def entropy(data, variables=[], base_2=False):
     """
         Computes Shannon entropy.
 
@@ -75,8 +75,7 @@ def entropy(data, variables=[], base_2=True):
 
     return -(probas * log_func(probas)).sum()[count_col_name]
 
-
-def conditional_entropy(data, conditioning_set=[], variables=[]):
+def conditional_entropy(data, conditioning_set=[], variables=[], base_2=False):
     """
         Computes H(X | Y) = H(X,Y) - H(Y) where Y is the conditioning_set and X
         and Y are the variables.
@@ -146,20 +145,22 @@ def conditional_entropy(data, conditioning_set=[], variables=[]):
     assert len(set(variables)) > 0
 
     if len(conditioning_set) == 0:
-        return entropy(data=data, variables=variables)
+        return entropy(data=data, variables=variables, base_2=base_2)
 
     vars_and_conditioning_set = \
         list(set(variables).union(set(conditioning_set)))
 
     return entropy(
                data=data,
-               variables=vars_and_conditioning_set
+               variables=vars_and_conditioning_set,
+               base_2=base_2
            ) - entropy(
                data=data,
-               variables=conditioning_set
+               variables=conditioning_set,
+               base_2=base_2
            )
 
-def conditional_mutual_information(data, vars_1, vars_2, conditioning_set=[]):
+def conditional_mutual_information(data, vars_1, vars_2, conditioning_set=[], base_2=False):
     """
         Computes I(X;Y|Z) = H(X|Z) - H(X|Y,Z). Essentially, this tells us
         whether or not Y tells us something about X, after we've known about
@@ -253,11 +254,13 @@ def conditional_mutual_information(data, vars_1, vars_2, conditioning_set=[]):
     return conditional_entropy(
         data=data,
         variables=vars_1,
-        conditioning_set=conditioning_set
+        conditioning_set=conditioning_set,
+        base_2=base_2
     ) - conditional_entropy(
         data=data,
         variables=vars_1,
-        conditioning_set=list(set(conditioning_set).union(vars_2))
+        conditioning_set=list(set(conditioning_set).union(vars_2)),
+        base_2=base_2
     )
 
 def multinomial_normalizing_sum(num_classes, sample_size, d=10):
@@ -337,21 +340,4 @@ def stochastic_complexity_score(
     conditioning_set,
     sample_size
 ):
-    # TODO: add back sample size after debugging?
-    # import pdb; pdb.set_trace()
-    return sample_size * \
-        conditional_mutual_information(
-            data=testwise_deleted_data,
-            vars_1=vars_1,
-            vars_2=vars_2,
-            conditioning_set=conditioning_set
-        ) + \
-        regret(
-            data=testwise_deleted_data,
-            variables=vars_1,
-            conditioning_set=conditioning_set
-        ) - \
-        regret(
-            data=testwise_deleted_data,
-            variables=vars_1,
-            conditioning_set=list(set(conditioning_set).union(vars_2)))
+    return sample_size *  conditional_mutual_information( data=testwise_deleted_data, vars_1=vars_1, vars_2=vars_2, conditioning_set=conditioning_set) + regret( data=testwise_deleted_data, variables=vars_1, conditioning_set=conditioning_set) - regret( data=testwise_deleted_data, variables=vars_1, conditioning_set=list(set(conditioning_set).union(vars_2)))
