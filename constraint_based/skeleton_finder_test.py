@@ -114,7 +114,7 @@ def test_chain_and_collider_without_MI(
 def test_chain_and_collider_with_MI(
     df_chain_and_collider_with_MI
 ):
-    size = 6000
+    size = 7000
 
     df = df_chain_and_collider_with_MI(size=size)
     skeleton_finder = SkeletonFinder(
