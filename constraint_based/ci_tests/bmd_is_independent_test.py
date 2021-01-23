@@ -122,7 +122,27 @@ def test_Z_causes_X_and_Y(
 
     assert bmd_is_independent(**params_2) == False
 
-@pytest.mark.focus
+def test_3_multinom_RVs_MAR(
+    df_Z_causes_X_Y_and_X_Z_causes_MI_Y
+):
+    size = 10000
+
+    df = df_Z_causes_X_Y_and_X_Z_causes_MI_Y(size=size)
+
+    params = {
+       "data": df,
+       "vars_1": ['x'],
+       "vars_2": ['y'],
+       "conditioning_set": ['z']
+    }
+
+    # We still get dependence because when doing this test, e.g. computing
+    # P(X|Z, MI_Y=0, Y*) and comparing that to P(X|Z). By testing for the
+    # observed Y only, we are implicitly conditioning on MI_Y, which is a
+    # collider between # X and Z, so we get a biased estimate and still see an
+    # association between X and Y, even after having adjusted for Z.
+    assert bmd_is_independent(**params) == False
+
 def test_spurious_edge(
     df_long_chains_and_collider_with_MI
 ):
