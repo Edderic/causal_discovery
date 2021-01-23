@@ -81,10 +81,18 @@ class MarkedPatternGraph(object):
         self.nodes = list(set(self.nodes).union(set(nodes)))
 
     def add_marked_arrows(self, marked_arrows):
-        self.marked_arrows = list(set(self.marked_arrows).union(set(marked_arrows)))
+        self.unmarked_arrows = set(self.unmarked_arrows).union(set(unmarked_arrows))
+
+    def add_marked_arrows(self, marked_arrows):
+        self.marked_arrows = set(self.marked_arrows).union(set(marked_arrows))
+
+    def add_unmarked_arrows(self, unmarked_arrows):
+        self.marked_arrows = set(self.unmarked_arrows).union(set(unmarked_arrows))
 
     def remove_undirected_edges(self, edges_to_remove):
-        self.undirected_edges = list(set(self.undirected_edges) - set(self.edges_to_remove))
+        edges = list(edges_to_remove)
+        set_of_sets = [frozenset(edge) for edge in edges]
+        self.undirected_edges = set(self.undirected_edges) - set(set_of_sets)
 
     def graphviz(self):
         digraph = Digraph(comment='marked_pattern')
@@ -92,17 +100,17 @@ class MarkedPatternGraph(object):
         for node in self.nodes:
             digraph.node(node)
 
-        for from_node, to_node in self.marked_arrows:
+        for from_node, to_node in list(self.marked_arrows):
             digraph.edge(from_node, to_node, label="*")
 
-        for from_node, to_node in self.unmarked_arrows:
+        for from_node, to_node in list(self.unmarked_arrows):
             digraph.edge(from_node, to_node)
 
-        for edge_set in self.bidirected_edges:
+        for edge_set in list(self.bidirected_edges):
             edges = list(edge_set)
             digraph.edge(edges[0], edges[1], _attributes={"dir": "both"})
 
-        for edge_set in self.undirected_edges:
+        for edge_set in list(self.undirected_edges):
             edges = list(edge_set)
             digraph.edge(edges[0], edges[1], _attributes={"dir": "none"})
 
