@@ -113,7 +113,7 @@ def posterior(data, variable, conditioning_set={}, size=1000):
 
     return np.random.dirichlet( tuple((bdeu_prior + data_count)), size=size)
 
-def is_dependent(p1, p2, proba_threshold, subt_cutoff=0.01, div_cutoff=1.5):
+def is_dependent(p1, p2, proba_threshold, subt_cutoff=0.001, div_cutoff=1.5):
     acceptable_1 = (p1 - p2 > subt_cutoff).sum(axis=0) / p1.shape[0] >= proba_threshold
     acceptable_2 = (p2 - p1 > subt_cutoff).sum(axis=0) / p1.shape[0] >= proba_threshold
 
