@@ -1,4 +1,4 @@
-from .ci_tests.sci_is_independent import sci_is_independent
+from .ci_tests.bmd_is_independent import bmd_is_independent
 from .misc import conditioning_sets_satisfying_conditional_independence
 
 class DirectCausesOfMissingnessFinder(object):
@@ -27,7 +27,7 @@ class DirectCausesOfMissingnessFinder(object):
                 missingness.
 
             is_conditionally_independent_func: function.
-                Defaults to sci_is_independent.
+                Defaults to bmd_is_independent.
 
                 Takes the following as parameters:
                    data: pd.DataFrame
@@ -42,7 +42,7 @@ class DirectCausesOfMissingnessFinder(object):
         self,
         data,
         missingness_indicator_prefix='MI_',
-        is_conditionally_independent_func=sci_is_independent,
+        is_conditionally_independent_func=bmd_is_independent,
         indegree=8
     ):
         self.data = data.merge(
