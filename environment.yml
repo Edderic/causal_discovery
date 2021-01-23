@@ -16,5 +16,8 @@ dependencies:
   - statsmodels=0.12.1
   - jupyter_contrib_nbextensions=0.5.1
   - xlrd=1.2.0
+  - pytest=6.2.1
+  - graphviz=2.42.3
+  - python-graphviz=0.16
 
 
