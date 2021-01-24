@@ -10,7 +10,7 @@ def test_2_multinom_RVs(df_2_multinomial_indep_RVs):
 
     graph, cond_sets_satisfying_cond_indep = skeleton_finder.find()
 
-    assert graph.undirected_edges == []
+    assert graph.get_undirected_edges() == set({})
     assert cond_sets_satisfying_cond_indep['x _||_ y'] == [set()]
 
 def test_skeleton_finder_X_causes_Y(df_X_causes_Y):
@@ -21,7 +21,7 @@ def test_skeleton_finder_X_causes_Y(df_X_causes_Y):
 
     graph, cond_sets_satisfying_cond_indep = skeleton_finder.find()
 
-    assert graph.undirected_edges == [set(('x', 'y'))]
+    assert graph.get_undirected_edges() == set({frozenset(('x', 'y'))})
     assert cond_sets_satisfying_cond_indep == {}
 
 def test_skeleton_finder_Z_causes_X_and_Y(df_Z_causes_X_and_Y):
@@ -35,7 +35,10 @@ def test_skeleton_finder_Z_causes_X_and_Y(df_Z_causes_X_and_Y):
     graph, cond_sets_satisfying_cond_indep = skeleton_finder.find()
 
     assert graph.nodes == var_names
-    assert graph.undirected_edges == [set(('x', 'z')), set(('y', 'z'))]
+    assert graph.get_undirected_edges() == set({
+        frozenset(('x', 'z')),
+        frozenset(('y', 'z'))
+    })
     assert cond_sets_satisfying_cond_indep == {'x _||_ y': [set(('z'))]}
 
 def test_long_chains_collider_bias_without_MI(
@@ -59,7 +62,7 @@ def test_long_chains_collider_bias_without_MI(
         frozenset({'c', 'd'}),
     })
 
-    assert frozenset(graph.undirected_edges) == expected_undirected_edges
+    assert frozenset(graph.get_undirected_edges()) == expected_undirected_edges
 
 def test_long_chains_collider_bias_with_MI(
     df_long_chains_and_collider_with_MI
@@ -86,7 +89,7 @@ def test_long_chains_collider_bias_with_MI(
         frozenset({'c', 'd'}),
     })
 
-    assert frozenset(graph.undirected_edges) == expected_undirected_edges
+    assert frozenset(graph.get_undirected_edges()) == expected_undirected_edges
 
 def test_chain_and_collider_without_MI(
     df_chain_and_collider_without_MI
@@ -109,7 +112,7 @@ def test_chain_and_collider_without_MI(
         frozenset({'c', 'd'})
     })
 
-    assert frozenset(graph.undirected_edges) == expected_undirected_edges
+    assert frozenset(graph.get_undirected_edges()) == expected_undirected_edges
 
 def test_chain_and_collider_with_MI(
     df_chain_and_collider_with_MI
@@ -136,7 +139,7 @@ def test_chain_and_collider_with_MI(
         frozenset({'c', 'd'})
     })
 
-    assert frozenset(graph.undirected_edges) == expected_undirected_edges
+    assert frozenset(graph.get_undirected_edges()) == expected_undirected_edges
 
 def test_3_multinom_RVs_MAR(
     df_Z_causes_X_Y_and_X_Z_causes_MI_Y
@@ -154,4 +157,4 @@ def test_3_multinom_RVs_MAR(
         skeleton_finder.find()
 
     assert set(graph.nodes).intersection(set(['x', 'y', 'MI_x']))
-    assert set(graph.undirected_edges) == frozenset({frozenset(('x', 'z')), frozenset(('z', 'y')), frozenset(('x', 'y'))})
+    assert set(graph.get_undirected_edges()) == frozenset({frozenset(('x', 'z')), frozenset(('z', 'y')), frozenset(('x', 'y'))})

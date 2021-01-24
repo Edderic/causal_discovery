@@ -5,7 +5,19 @@ def test_add_undirected_edge():
     graph = MarkedPatternGraph(nodes=['a', 'b'])
     graph.add_undirected_edge(('a', 'b'))
 
-    assert set(graph.get_undirected_edges()) == set({'a', 'b'})
+    assert graph.get_undirected_edges() == set({
+        frozenset({'a', 'b'})
+    })
+
+def test_add_undirected_edge_instantiate():
+    graph = MarkedPatternGraph(
+        nodes=['a', 'b'],
+        undirected_edges=[('a', 'b')]
+    )
+
+    assert graph.get_undirected_edges() == set({
+        frozenset({'a', 'b'})
+    })
 
 def test_remove_undirected_edge():
     graph = MarkedPatternGraph(nodes=['a', 'b'])
