@@ -162,11 +162,14 @@ class MarkedPatternGraph(object):
         """
         node_1, node_2 = self._instantiate_node_tuple(node_tuple)
 
+        self._remove_other_arrowheads(
+            node_1,
+            node_2,
+            except_arrowhead_type=self.UNMARKED_ARROWHEAD
+        )
+
         self.dict[node_1][self.UNMARKED_ARROWHEAD] = \
             self.dict[node_1][self.UNMARKED_ARROWHEAD].union(set({node_2}))
-
-        self.dict[node_1][self.NO_ARROWHEAD] = \
-            self.dict[node_1][self.NO_ARROWHEAD] - set({node_2})
 
     def add_marked_arrowhead(self, node_tuple):
         """
@@ -294,7 +297,7 @@ class MarkedPatternGraph(object):
         }
 
     def _remove_other_arrowheads(self, node_1, node_2, except_arrowhead_type):
-        arrowhead_types = list(self.ARROWHEAD_TYPES - set(except_arrowhead_type))
+        arrowhead_types = list(self.ARROWHEAD_TYPES - set({except_arrowhead_type}))
 
         for arrowhead_type in arrowhead_types:
             self.dict[node_1][arrowhead_type] = \
