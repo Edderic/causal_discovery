@@ -205,6 +205,18 @@ class MarkedPatternGraph(object):
 
         return marked_arrows
 
+    def get_bidirectional_edges(self):
+        bidirectional_edges = set({})
+
+        for node, ends in self.dict.items():
+            for other_node in list(ends[self.DIRECTED_ARROWHEAD]):
+                if self.dict[other_node][self.DIRECTED_ARROWHEAD].intersection(set({node})) != set({}):
+                    bidirectional_edges = bidirectional_edges.union(
+                        set({frozenset({node, other_node})})
+                    )
+
+        return bidirectional_edges
+
     def _instantiate_dict_for_var(self, var):
         self.dict[var] = {
             self.NO_ARROWHEAD:  set(), # no arrowhead from var to the vars in the list
