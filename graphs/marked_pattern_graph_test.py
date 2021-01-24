@@ -92,6 +92,7 @@ def test_has_arrowhead_with_marked_arrowhead():
     graph.add_marked_arrowhead(('a', 'b'))
 
     assert graph.has_arrowhead(('a', 'b')) == True
+    assert graph.has_marked_arrowhead(('a', 'b')) == True
 
 def test_has_arrowhead_with_unmarked_arrowhead():
     graph = MarkedPatternGraph(nodes=['a', 'b'])
@@ -107,6 +108,8 @@ def test_has_marked_path():
     graph.add_undirected_edge(('a', 'b'))
     graph.add_marked_arrowhead(('a', 'b'))
 
+    assert graph.has_marked_arrowhead(('a', 'b')) == True
+
     graph.add_undirected_edge(('b', 'c'))
 
     assert graph.has_marked_path(('a', 'c')) == False
@@ -116,3 +119,24 @@ def test_has_marked_path():
     assert graph.has_marked_path(('a', 'c')) == True
 
     assert graph.get_nodes_of_edges() == set({'a', 'b', 'c'})
+
+def test_has_marked_path_longer():
+    #   a -*> b -*> c -*> d
+    #    \               /
+    #      \           /
+    #       \        /
+    #         ------
+    graph = MarkedPatternGraph(
+        nodes=['a', 'b', 'c', 'd']
+    )
+    graph.add_undirected_edge(('a', 'b'))
+    graph.add_undirected_edge(('b', 'c'))
+    graph.add_undirected_edge(('c', 'd'))
+    graph.add_undirected_edge(('a', 'd'))
+
+    graph.add_marked_arrowhead(('a', 'b'))
+    graph.add_marked_arrowhead(('b', 'c'))
+    graph.add_marked_arrowhead(('c', 'd'))
+
+    assert graph.has_marked_path(('a', 'd')) == True
+

@@ -211,6 +211,30 @@ class MarkedPatternGraph(object):
 
         return boolean
 
+    def has_marked_arrowhead(self, node_tuple):
+        """
+            If the edge has a marked arrowhead pointing to the second node,
+            return True.  Otherwise, return False.
+
+            Parameters:
+                node_tuple: tuple
+                    First node and second node determine the edge we're
+                    interested in.
+
+            Return: boolean
+        """
+        node_1, node_2 = self._instantiate_node_tuple(node_tuple)
+
+        boolean = False
+
+        for arrowhead in [self.MARKED_ARROWHEAD]:
+
+            boolean = boolean or self\
+                .dict[node_1][arrowhead]\
+                .intersection(set({node_2})) != set({})
+
+        return boolean
+
     def has_marked_path(self, node_tuple):
         node_1, node_2 = self._instantiate_node_tuple(node_tuple)
 
