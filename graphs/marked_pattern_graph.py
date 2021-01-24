@@ -53,11 +53,11 @@ def get_common_adj_nodes_between_non_adj_nodes(edges, node_1, node_2):
 
 class MarkedPatternGraph(object):
     NO_ARROWHEAD = "-"
-    DIRECTED_ARROWHEAD = "->"
+    UNMARKED_ARROWHEAD = "->"
     MARKED_ARROWHEAD = "*>"
     ARROWHEAD_TYPES = set({
         NO_ARROWHEAD,
-        DIRECTED_ARROWHEAD,
+        UNMARKED_ARROWHEAD,
         MARKED_ARROWHEAD
     })
 
@@ -162,8 +162,8 @@ class MarkedPatternGraph(object):
         """
         node_1, node_2 = self._instantiate_node_tuple(node_tuple)
 
-        self.dict[node_1][self.DIRECTED_ARROWHEAD] = \
-            self.dict[node_1][self.DIRECTED_ARROWHEAD].union(set({node_2}))
+        self.dict[node_1][self.UNMARKED_ARROWHEAD] = \
+            self.dict[node_1][self.UNMARKED_ARROWHEAD].union(set({node_2}))
 
         self.dict[node_1][self.NO_ARROWHEAD] = \
             self.dict[node_1][self.NO_ARROWHEAD] - set({node_2})
@@ -184,6 +184,51 @@ class MarkedPatternGraph(object):
         self.dict[node_1][self.MARKED_ARROWHEAD] = \
             self.dict[node_1][self.MARKED_ARROWHEAD].union(set({node_2}))
 
+    def has_arrowhead(self, node_tuple):
+        """
+            If the edge has an arrowhead pointing to the second node, return
+            True.  Otherwise, return False.
+
+            Parameters:
+                node_tuple: tuple
+                    First node and second node determine the edge we're
+                    interested in.
+
+            Return: boolean
+        """
+        node_1, node_2 = self._instantiate_node_tuple(node_tuple)
+
+        boolean = False
+
+        for arrowhead in [self.UNMARKED_ARROWHEAD, self.MARKED_ARROWHEAD]:
+
+            boolean = boolean or self\
+                .dict[node_1][arrowhead]\
+                .intersection(set({node_2})) != set({})
+
+        return boolean
+
+    def has_marked_path(self, node_tuple):
+        node_1, node_2 = self._instantiate_node_tuple(node_tuple)
+
+        return self._is_node_certainly_a_descendant(node_1, node_2)
+
+
+    def _is_node_certainly_a_descendant(self, node, possibly_a_descendant_node):
+        children = list(self.dict[node][self.MARKED_ARROWHEAD])
+
+        for child in children:
+            if child == possibly_a_descendant_node:
+                return True
+
+            return self._is_node_certainly_a_descendant(child, possibly_a_descendant_node)
+
+        return False
+
+
+
+
+
     def get_undirected_edges(self):
         undirected_edges = set({})
 
@@ -198,7 +243,7 @@ class MarkedPatternGraph(object):
         unmarked_arrows = set({})
 
         for node, ends in self.dict.items():
-            for other_node in list(ends[self.DIRECTED_ARROWHEAD]):
+            for other_node in list(ends[self.UNMARKED_ARROWHEAD]):
                 if self.dict[other_node][self.NO_ARROWHEAD].intersection(set({node})) != set({}):
                     unmarked_arrows = unmarked_arrows.union(set({(node, other_node)}))
 
@@ -217,8 +262,8 @@ class MarkedPatternGraph(object):
         bidirectional_edges = set({})
 
         for node, ends in self.dict.items():
-            for other_node in list(ends[self.DIRECTED_ARROWHEAD]):
-                if self.dict[other_node][self.DIRECTED_ARROWHEAD].intersection(set({node})) != set({}):
+            for other_node in list(ends[self.UNMARKED_ARROWHEAD]):
+                if self.dict[other_node][self.UNMARKED_ARROWHEAD].intersection(set({node})) != set({}):
                     bidirectional_edges = bidirectional_edges.union(
                         set({frozenset({node, other_node})})
                     )
@@ -228,7 +273,7 @@ class MarkedPatternGraph(object):
     def _instantiate_dict_for_var(self, var):
         self.dict[var] = {
             self.NO_ARROWHEAD:  set(), # no arrowhead from var to the vars in the list
-            self.DIRECTED_ARROWHEAD: set(), # arrowhead from var to the vars in the list
+            self.UNMARKED_ARROWHEAD: set(), # arrowhead from var to the vars in the list
             self.MARKED_ARROWHEAD: set()  # marked arrowhead from var to the vars in the list
         }
 
