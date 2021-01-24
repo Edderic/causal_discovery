@@ -225,9 +225,15 @@ class MarkedPatternGraph(object):
 
         return False
 
+    def get_edges(self):
+        edges = set({})
 
+        for node, ends in self.dict.items():
+            for arrowhead_type in self.ARROWHEAD_TYPES:
+                for other_node in list(ends[arrowhead_type]):
+                    edges = edges.union(set({frozenset({node, other_node})}))
 
-
+        return edges
 
     def get_undirected_edges(self):
         undirected_edges = set({})

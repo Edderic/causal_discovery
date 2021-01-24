@@ -28,6 +28,7 @@ def test_add_marked_arrows():
     graph.add_marked_arrows(set({('c', 'd')}))
 
     assert graph.get_marked_arrows() == set({('c', 'd')})
+    assert set(graph.get_edges()) == set({frozenset({'a', 'b'}), frozenset({'c', 'd'})})
 
 def test_remove_undirected_edge():
     graph = MarkedPatternGraph(nodes=['a', 'b'])
@@ -38,6 +39,7 @@ def test_remove_undirected_edge():
     assert set(graph.get_unmarked_arrows()) == set({})
     assert set(graph.get_marked_arrows()) == set({})
     assert set(graph.get_bidirectional_edges()) == set({})
+    assert set(graph.get_edges()) == set({})
 
 def test_remove_undirected_edge_when_not_exist():
     graph = MarkedPatternGraph(nodes=['a', 'b'])
@@ -47,6 +49,7 @@ def test_remove_undirected_edge_when_not_exist():
     assert set(graph.get_unmarked_arrows()) == set({})
     assert set(graph.get_marked_arrows()) == set({})
     assert set(graph.get_bidirectional_edges()) == set({})
+    assert set(graph.get_edges()) == set({})
 
 def test_add_arrowhead():
     graph = MarkedPatternGraph(nodes=['a', 'b'])
@@ -57,6 +60,7 @@ def test_add_arrowhead():
     assert set(graph.get_unmarked_arrows()) == set({('a', 'b')})
     assert set(graph.get_marked_arrows()) == set({})
     assert set(graph.get_bidirectional_edges()) == set({})
+    assert set(graph.get_edges()) == set({frozenset({'a', 'b'})})
 
 def test_add_marked_arrowhead():
     graph = MarkedPatternGraph(nodes=['a', 'b'])
@@ -67,6 +71,7 @@ def test_add_marked_arrowhead():
     assert set(graph.get_unmarked_arrows()) == set({})
     assert set(graph.get_marked_arrows()) == set({('a', 'b')})
     assert set(graph.get_bidirectional_edges()) == set({})
+    assert set(graph.get_edges()) == set({frozenset({'a', 'b'})})
 
 def test_bidirectional_edges():
     graph = MarkedPatternGraph(nodes=['a', 'b'])
