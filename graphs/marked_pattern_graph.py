@@ -235,6 +235,16 @@ class MarkedPatternGraph(object):
 
         return edges
 
+    def get_nodes_of_edges(self):
+        edges = list(self.get_edges())
+
+        nodes = set({})
+
+        for edge in edges:
+            nodes = nodes.union(set(edge))
+
+        return nodes
+
     def get_undirected_edges(self):
         undirected_edges = set({})
 

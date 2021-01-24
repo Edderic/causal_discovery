@@ -114,3 +114,5 @@ def test_has_marked_path():
     graph.add_marked_arrowhead(('b', 'c'))
 
     assert graph.has_marked_path(('a', 'c')) == True
+
+    assert graph.get_nodes_of_edges() == set({'a', 'b', 'c'})
