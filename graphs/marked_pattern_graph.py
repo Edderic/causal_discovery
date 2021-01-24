@@ -31,7 +31,7 @@ def get_nodes_adj_to_node(edges, node):
 
     return collection - set({node})
 
-def get_common_adj_nodes(edges, node_1, node_2):
+def get_common_adj_nodes_between_non_adj_nodes(edges, node_1, node_2):
     nodes_adj_to_node_1 = get_nodes_adj_to_node(
         edges=edges,
         node=node_1
@@ -52,6 +52,15 @@ def get_common_adj_nodes(edges, node_1, node_2):
     return nodes_adj_to_node_1.intersection(nodes_adj_to_node_2)
 
 class MarkedPatternGraph(object):
+    NO_ARROWHEAD = "-"
+    DIRECTED_ARROWHEAD = "->"
+    MARKED_ARROWHEAD = "*>"
+    ARROWHEAD_TYPES = set({
+        NO_ARROWHEAD,
+        DIRECTED_ARROWHEAD,
+        MARKED_ARROWHEAD
+    })
+
     """
         A Marked Pattern represents a set of DAGs. This class uses the
         following definition, taken from Causality (Pearl, 2009). There are
@@ -96,6 +105,7 @@ class MarkedPatternGraph(object):
         self.bidirected_edges = bidirected_edges
         self.undirected_edges = undirected_edges
         self.missingness_indicator_prefix = missingness_indicator_prefix
+        self.dict = {}
 
     def add_nodes(self, nodes):
         self.nodes = list(set(self.nodes).union(set(nodes)))
@@ -108,6 +118,120 @@ class MarkedPatternGraph(object):
 
     def add_unmarked_arrows(self, unmarked_arrows):
         self.marked_arrows = set(self.unmarked_arrows).union(set(unmarked_arrows))
+
+    def add_undirected_edge(self, node_tuple):
+        """
+            Parameters:
+                node_tuple: tuple[str]
+        """
+
+        node_1, node_2 = self._instantiate_node_tuple(node_tuple)
+
+        self.dict[node_1][self.NO_ARROWHEAD] = \
+            self.dict[node_1][self.NO_ARROWHEAD].union(set({node_2}))
+
+        self.dict[node_2][self.NO_ARROWHEAD] = \
+            self.dict[node_2][self.NO_ARROWHEAD].union(set({node_1}))
+
+    def remove_undirected_edge(self, node_tuple):
+        """
+            Parameters:
+                node_tuple: tuple[str]
+        """
+
+        node_1, node_2 = self._instantiate_node_tuple(node_tuple)
+
+        self.dict[node_1][self.NO_ARROWHEAD] = \
+            self.dict[node_1][self.NO_ARROWHEAD] - set({node_2})
+
+        self.dict[node_2][self.NO_ARROWHEAD] = \
+            self.dict[node_2][self.NO_ARROWHEAD] - set({node_1})
+
+    def add_arrowhead(self, node_tuple):
+        """
+            Parameters:
+                node_tuple: tuple[str]
+        """
+        node_1, node_2 = self._instantiate_node_tuple(node_tuple)
+
+        self.dict[node_1][self.DIRECTED_ARROWHEAD] = \
+            self.dict[node_1][self.DIRECTED_ARROWHEAD].union(set({node_2}))
+
+        self.dict[node_1][self.NO_ARROWHEAD] = \
+            self.dict[node_1][self.NO_ARROWHEAD] - set({node_2})
+
+    def add_marked_arrowhead(self, node_tuple):
+        """
+            Parameters:
+                node_tuple: tuple[str]
+        """
+        node_1, node_2 = self._instantiate_node_tuple(node_tuple)
+
+        self._remove_other_arrowheads(
+            node_1,
+            node_2,
+            except_arrowhead_type=self.MARKED_ARROWHEAD
+        )
+
+        self.dict[node_1][self.MARKED_ARROWHEAD] = \
+            self.dict[node_1][self.MARKED_ARROWHEAD].union(set({node_2}))
+
+    def get_undirected_edges(self):
+        undirected_edges = set({})
+
+        for node, ends in self.dict.items():
+            for other_node in list(ends[self.NO_ARROWHEAD]):
+                if self.dict[other_node][self.NO_ARROWHEAD].intersection(set({node})) != set({}):
+                    undirected_edges = undirected_edges.union(set({node, other_node}))
+
+        return undirected_edges
+
+    def get_unmarked_arrows(self):
+        unmarked_arrows = set({})
+
+        for node, ends in self.dict.items():
+            for other_node in list(ends[self.DIRECTED_ARROWHEAD]):
+                if self.dict[other_node][self.NO_ARROWHEAD].intersection(set({node})) != set({}):
+                    unmarked_arrows = unmarked_arrows.union(set({(node, other_node)}))
+
+        return unmarked_arrows
+
+    def get_marked_arrows(self):
+        marked_arrows = set({})
+
+        for node, ends in self.dict.items():
+            for other_node in list(ends[self.MARKED_ARROWHEAD]):
+                marked_arrows = marked_arrows.union(set({(node, other_node)}))
+
+        return marked_arrows
+
+    def _instantiate_dict_for_var(self, var):
+        self.dict[var] = {
+            self.NO_ARROWHEAD:  set(), # no arrowhead from var to the vars in the list
+            self.DIRECTED_ARROWHEAD: set(), # arrowhead from var to the vars in the list
+            self.MARKED_ARROWHEAD: set()  # marked arrowhead from var to the vars in the list
+        }
+
+    def _remove_other_arrowheads(self, node_1, node_2, except_arrowhead_type):
+        arrowhead_types = list(self.ARROWHEAD_TYPES - set(except_arrowhead_type))
+
+        for arrowhead_type in arrowhead_types:
+            self.dict[node_1][arrowhead_type] = \
+                self.dict[node_1][arrowhead_type] - set({node_2})
+
+    def _instantiate_node_tuple(self, node_tuple):
+        assert len(node_tuple) == 2
+
+        node_1 = node_tuple[0]
+        node_2 = node_tuple[1]
+
+        if node_1 not in self.dict.keys():
+            self._instantiate_dict_for_var(node_1)
+
+        if node_2 not in self.dict.keys():
+            self._instantiate_dict_for_var(node_2)
+
+        return node_1, node_2
 
     def remove_undirected_edges(self, edges_to_remove):
         edges = list(edges_to_remove)
