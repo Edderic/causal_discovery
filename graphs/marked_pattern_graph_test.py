@@ -19,6 +19,16 @@ def test_add_undirected_edge_instantiate():
         frozenset({'a', 'b'})
     })
 
+def test_add_marked_arrows():
+    graph = MarkedPatternGraph(
+        nodes=['a', 'b'],
+        undirected_edges=[('a', 'b')]
+    )
+
+    graph.add_marked_arrows(set({('c', 'd')}))
+
+    assert graph.get_marked_arrows() == set({('c', 'd')})
+
 def test_remove_undirected_edge():
     graph = MarkedPatternGraph(nodes=['a', 'b'])
     graph.add_undirected_edge(('a', 'b'))
@@ -67,4 +77,4 @@ def test_bidirectional_edges():
     assert set(graph.get_undirected_edges()) == set({})
     assert set(graph.get_unmarked_arrows()) == set({})
     assert set(graph.get_marked_arrows()) == set({})
-    assert set(graph.get_bidirectional_edges()) == set({(frozenset({'a', 'b'}))})
+    assert set(graph.get_bidirectional_edges()) == set({frozenset({'a', 'b'})})
