@@ -89,7 +89,7 @@ class PotentiallyExtraneousEdgesFinder(object):
         return frozenset(self._undirected_edges()).union(frozenset(self._marked_arrows()))
 
     def _undirected_edges(self):
-        return self.marked_pattern_graph.undirected_edges
+        return self.marked_pattern_graph.get_undirected_edges()
 
     def _marked_arrows(self):
         return self.marked_pattern_graph.marked_arrows
