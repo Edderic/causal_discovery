@@ -47,7 +47,7 @@ def test_when_marked_path_exists():
 
     assert graph.get_unmarked_arrows() == set({('a', 'c')})
 
-# @pytest.mark.focus
+@pytest.mark.focus
 def test_longer_marked_path_exists():
     #   a -*> b -*> c -*> d
     #    \               /
