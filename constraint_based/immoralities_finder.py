@@ -25,8 +25,9 @@ class ImmoralitiesFinder(object):
         self.cond_sets_satisfying_cond_indep = cond_sets_satisfying_cond_indep
 
     def find(self):
+        undirected_edges = self.marked_pattern_graph.get_undirected_edges()
         undirected_nodes = \
-            get_nodes_from_edges(self.marked_pattern_graph.undirected_edges)
+            get_nodes_from_edges(undirected_edges)
 
         unmarked_arrows = set({})
 
@@ -36,9 +37,7 @@ class ImmoralitiesFinder(object):
                 if node_1 == node_2:
                     continue
 
-                edges_for_getting_nodes_adj_to_node = self\
-                    .marked_pattern_graph\
-                    .undirected_edges
+                edges_for_getting_nodes_adj_to_node = undirected_edges
 
                 common_adjacent_nodes = get_common_adj_nodes_between_non_adj_nodes(
                     edges=edges_for_getting_nodes_adj_to_node,
