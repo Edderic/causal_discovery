@@ -39,13 +39,13 @@ class ImmoralitiesFinder(object):
 
                 edges_for_getting_nodes_adj_to_node = undirected_edges
 
-                common_adjacent_nodes = get_common_adj_nodes_between_non_adj_nodes(
-                    edges=edges_for_getting_nodes_adj_to_node,
-                    node_1=node_1,
-                    node_2=node_2
-                )
+                common_neighbors = \
+                    self.marked_pattern_graph.get_common_neighbors(
+                        node_1=node_1,
+                        node_2=node_2
+                    )
 
-                for common_adj_node in common_adjacent_nodes:
+                for common_adj_node in common_neighbors:
                     try:
                         if self.\
                                 _get_cond_set_vars_for_pair(
