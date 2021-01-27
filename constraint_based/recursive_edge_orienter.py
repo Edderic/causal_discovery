@@ -1,5 +1,4 @@
 from ..graphs.marked_pattern_graph import MarkedPatternGraph
-from ..graphs.marked_pattern_graph import get_common_adj_nodes_between_non_adj_nodes
 
 class RecursiveEdgeOrienter(object):
     def __init__(self, marked_pattern_graph):
@@ -20,32 +19,27 @@ class RecursiveEdgeOrienter(object):
                         continue
 
                     if set({frozenset({node_1, node_2})}).intersection(edges) == set({}):
-                        common_adj_nodes = get_common_adj_nodes_between_non_adj_nodes(
-                            edges,
-                            node_1,
-                            node_2
-                        )
-
                         applied = applied or self._apply_rule_1_to(
                             node_1,
-                            node_2,
-                            common_adj_nodes
+                            node_2
                         )
                     else:
                         applied = applied or self._apply_rule_2_to(node_1, node_2)
 
 
-    def _apply_rule_1_to(self, node_1, node_2, common_adj_nodes):
+    def _apply_rule_1_to(self, node_1, node_2):
         applied = False
 
-        for common_adj_node in common_adj_nodes:
-            if self.marked_pattern_graph.has_arrowhead(
-                    (node_1, common_adj_node)
-                ) \
-                and not self.marked_pattern_graph.has_arrowhead((node_2, common_adj_node)) \
-                and not self.marked_pattern_graph.has_marked_arrowhead((common_adj_node, node_2)):
+        common_neighbors = self.marked_pattern_graph.get_common_neighbors(node_1, node_2)
 
-                self.marked_pattern_graph.add_marked_arrowhead((common_adj_node, node_2))
+        for common_neighbor in common_neighbors:
+            if self.marked_pattern_graph.has_arrowhead(
+                    (node_1, common_neighbor)
+                ) \
+                and not self.marked_pattern_graph.has_arrowhead((node_2, common_neighbor)) \
+                and not self.marked_pattern_graph.has_marked_arrowhead((common_neighbor, node_2)):
+
+                self.marked_pattern_graph.add_marked_arrowhead((common_neighbor, node_2))
 
                 applied = applied | True
 
