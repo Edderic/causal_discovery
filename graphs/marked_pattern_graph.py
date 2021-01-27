@@ -118,6 +118,11 @@ class MarkedPatternGraph(object):
         self.nodes = list(set(self.nodes).union(set(nodes)))
 
     def add_marked_arrow(self, marked_arrow):
+        """
+            Parameters:
+                marked_arrow: tuple[str]
+                    Ex: ('a','b') means  a --*> b
+        """
         self.add_undirected_edge(marked_arrow)
         self.add_marked_arrowhead(marked_arrow)
 

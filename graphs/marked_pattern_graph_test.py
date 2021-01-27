@@ -26,7 +26,7 @@ def test_add_marked_arrows():
         undirected_edges=[('a', 'b')]
     )
 
-    graph.add_marked_arrows(set({('c', 'd')}))
+    graph.add_marked_arrow(('c', 'd'))
 
     assert graph.get_marked_arrows() == set({('c', 'd')})
     assert set(graph.get_edges()) == set({frozenset({'a', 'b'}), frozenset({'c', 'd'})})
