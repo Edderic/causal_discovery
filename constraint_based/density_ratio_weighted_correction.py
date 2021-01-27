@@ -60,7 +60,7 @@ class DensityRatioWeightedCorrection(object):
         return df
 
     def _constant(self):
-        num_counts = self.data[self._missingness_indicators()]
+        num_counts = self.data[self._missingness_indicators()].copy()
         num_counts['tmp_count'] = 0
         counts = num_counts.groupby(list(self._missingness_indicators())).count()
         running_vals = counts.xs(
