@@ -106,26 +106,20 @@ class MarkedPatternGraph(object):
         self.unmarked_arrows = unmarked_arrows
         self.bidirected_edges = bidirected_edges
 
-        for undirected_edge in undirected_edges:
+        for undirected_edge in list(undirected_edges):
             self.add_undirected_edge(tuple(undirected_edge))
+
+        for marked_arrow in list(marked_arrows):
+            self.add_marked_arrow(tuple(marked_arrow))
 
         self.missingness_indicator_prefix = missingness_indicator_prefix
 
     def add_nodes(self, nodes):
         self.nodes = list(set(self.nodes).union(set(nodes)))
 
-    def add_marked_arrows(self, marked_arrows):
-        _marked_arrows = list(marked_arrows)
-
-        for marked_arrow in marked_arrows:
-            self.add_undirected_edge(marked_arrow)
-            self.add_marked_arrowhead(marked_arrow)
-
-    # def add_marked_arrows(self, marked_arrows):
-        # self.marked_arrows = set(self.marked_arrows).union(set(marked_arrows))
-
-    def add_unmarked_arrows(self, unmarked_arrows):
-        self.marked_arrows = set(self.unmarked_arrows).union(set(unmarked_arrows))
+    def add_marked_arrow(self, marked_arrow):
+        self.add_undirected_edge(marked_arrow)
+        self.add_marked_arrowhead(marked_arrow)
 
     def add_undirected_edge(self, node_tuple):
         """
