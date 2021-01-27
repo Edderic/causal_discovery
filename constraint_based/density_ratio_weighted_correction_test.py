@@ -5,7 +5,7 @@ from pytest import approx
 from ..graphs.marked_pattern_graph import MarkedPatternGraph
 from .density_ratio_weighted_correction import DensityRatioWeightedCorrection
 
-def test_long_chains_and_collider_with_MI(df_long_chains_and_collider_with_MI):
+def test_missing_data_because_of_ses():
     size = 10000
 
     ses = np.random.binomial(n=1, p=0.3, size=size)
@@ -22,7 +22,7 @@ def test_long_chains_and_collider_with_MI(df_long_chains_and_collider_with_MI):
         + (ses == 0) * missing_b_1_given_ses_low
 
     # true mean
-    assert b.mean() == approx(0.55, abs=0.01)
+    assert b.mean() == approx(0.55, abs=0.015)
 
     # Those with lower SES are more likely to be missing.
     missing_index = np.where(missing == 1)[0]
@@ -35,7 +35,7 @@ def test_long_chains_and_collider_with_MI(df_long_chains_and_collider_with_MI):
     df_with_missing_data.loc[missing_index, 'b'] = np.nan
 
     # A naive analysis leads to an overestimate.
-    assert df_with_missing_data['b'].mean() == approx(0.62, abs=0.01)
+    assert df_with_missing_data['b'].mean() == approx(0.62, abs=0.015)
 
     graph = MarkedPatternGraph(
         nodes=['ses', 'b', 'MI_b'],
@@ -49,10 +49,11 @@ def test_long_chains_and_collider_with_MI(df_long_chains_and_collider_with_MI):
         marked_pattern_graph=graph
     )
 
+    # reweight data before running statistics on it
     reweighted_df = corrector.correct()
 
     # we're able to recover the true mean
-    assert reweighted_df['b'].mean() == approx(0.55, abs=0.01)
+    assert reweighted_df['b'].mean() == approx(0.55, abs=0.015)
 
 
 
