@@ -1,5 +1,4 @@
 from ..graphs.marked_pattern_graph import get_nodes_from_edges
-from ..graphs.marked_pattern_graph import get_common_adj_nodes_between_non_adj_nodes
 from .misc import key_for_pair
 
 class ImmoralitiesFinder(object):
