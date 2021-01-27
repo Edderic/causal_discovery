@@ -1,10 +1,29 @@
 from ..graphs.marked_pattern_graph import MarkedPatternGraph
 
 class RecursiveEdgeOrienter(object):
+    """
+        Applies the two rules of orienting edges of IC* (done after finding the
+        skeleton and finding immoralities).
+
+        Rule 1: When two nodes A & B are non-adjacent, and they have a common
+        neighbor C, if the edge A to C has an arrowhead toward C, then add an
+        arrowhead from C to B and mark it.
+
+        Rule 2: If two nodes A & B are adjacent, and there is a directed path
+        from A to B (composed of strictly marked edges: A-*> ... -*> B), then
+        add an arrowhead pointing to B.
+
+        Parameters:
+            marked_pattern_graph: graphs.MarkedPatternGraph
+    """
     def __init__(self, marked_pattern_graph):
         self.marked_pattern_graph = marked_pattern_graph
 
     def orient(self):
+        """
+            Applies the two rules recursively.
+        """
+
         applied = True
 
         nodes = self.marked_pattern_graph.get_nodes_of_edges()
