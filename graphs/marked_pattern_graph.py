@@ -121,7 +121,7 @@ class MarkedPatternGraph(object):
         """
             Parameters:
                 marked_arrow: tuple[str]
-                    Ex: ('a','b') means  a --*> b
+                    Ex: ('a','b') means  a *> b
         """
         self.add_undirected_edge(marked_arrow)
         self.add_marked_arrowhead(marked_arrow)
@@ -130,6 +130,7 @@ class MarkedPatternGraph(object):
         """
             Parameters:
                 node_tuple: tuple[str]
+                    Ex: ('a','b') means  a - b
         """
 
         node_1, node_2 = self._instantiate_node_tuple(node_tuple)
