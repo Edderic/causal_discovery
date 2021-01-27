@@ -1,5 +1,6 @@
 import pytest
 from .marked_pattern_graph import MarkedPatternGraph
+from .marked_pattern_graph import get_common_adj_nodes_between_non_adj_nodes
 
 def test_add_undirected_edge():
     graph = MarkedPatternGraph(nodes=['a', 'b'])
@@ -140,3 +141,51 @@ def test_has_marked_path_longer():
 
     assert graph.has_marked_path(('a', 'd')) == True
 
+def test_longer_marked_path_exists():
+    #   a -*> b -*> c -*> d
+    #    \               /
+    #      \           /
+    #       \        /
+    #         ------
+    graph = MarkedPatternGraph(
+        nodes=['a', 'b', 'c', 'd']
+    )
+    graph.add_undirected_edge(('a', 'b'))
+    graph.add_undirected_edge(('b', 'c'))
+    graph.add_undirected_edge(('c', 'd'))
+    graph.add_undirected_edge(('a', 'd'))
+
+    graph.add_marked_arrowhead(('a', 'b'))
+    graph.add_marked_arrowhead(('b', 'c'))
+    graph.add_marked_arrowhead(('c', 'd'))
+
+    assert graph.has_marked_path(('d', 'c')) == False
+
+def test_simple():
+     # a     c
+      # \   /
+       # v v
+        # b
+        # |
+        # d
+    graph = MarkedPatternGraph(
+        nodes=['a', 'b', 'c', 'd']
+    )
+    graph.add_undirected_edge(('a', 'b'))
+    graph.add_undirected_edge(('c', 'b'))
+    graph.add_undirected_edge(('b', 'd'))
+
+    graph.add_arrowhead(('a', 'b'))
+    graph.add_arrowhead(('c', 'b'))
+
+    assert graph.get_edges() == set({
+        frozenset({'a', 'b'}),
+        frozenset({'b', 'c'}),
+        frozenset({'b', 'd'})
+    })
+
+    assert get_common_adj_nodes_between_non_adj_nodes(
+        edges=graph.get_edges(),
+        node_1='a',
+        node_2='d'
+    ) == set({'b'})
