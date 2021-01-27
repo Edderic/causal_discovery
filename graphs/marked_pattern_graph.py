@@ -235,6 +235,30 @@ class MarkedPatternGraph(object):
 
         return boolean
 
+    def has_unmarked_arrowhead(self, node_tuple):
+        """
+            If the edge has a marked arrowhead pointing to the second node,
+            return True.  Otherwise, return False.
+
+            Parameters:
+                node_tuple: tuple
+                    First node and second node determine the edge we're
+                    interested in.
+
+            Return: boolean
+        """
+        node_1, node_2 = self._instantiate_node_tuple(node_tuple)
+
+        boolean = False
+
+        for arrowhead in [self.UNMARKED_ARROWHEAD]:
+
+            boolean = boolean or self\
+                .dict[node_1][arrowhead]\
+                .intersection(set({node_2})) != set({})
+
+        return boolean
+
     def has_marked_path(self, node_tuple):
         node_1, node_2 = self._instantiate_node_tuple(node_tuple)
 
@@ -261,6 +285,47 @@ class MarkedPatternGraph(object):
                     edges = edges.union(set({frozenset({node, other_node})}))
 
         return edges
+
+    def get_neighbors(self, node):
+        """
+            Parameters:
+                node: str
+                    Name of a node.
+
+            Returns: set[str]
+
+            Ex: Let's say the graph is the following:
+                node_1 -*> node_2 -- node_3
+
+                           node_4
+
+                >>> get_neighbors('node_2')
+                set({'node_1', 'node_3'})
+        """
+        neighbors = set({})
+
+        for arrowhead_type in self.ARROWHEAD_TYPES:
+            neighbors = neighbors.union(self.dict[node][arrowhead_type])
+
+        return neighbors
+
+
+    def get_common_neighbors(self, node_1, node_2):
+        """
+            Parameters:
+                node_1: str
+                node_2: str
+
+            Returns: set[str]
+
+            Ex: Let's say the graph is the following:
+                node_1 -*> node_2 -- node_3
+
+                >>> get_common_neighbors('node_1', 'node_3')
+                set({'node_2'})
+        """
+
+        return self.get_neighbors(node_1).intersection(self.get_neighbors(node_2))
 
     def get_nodes_of_edges(self):
         edges = list(self.get_edges())
