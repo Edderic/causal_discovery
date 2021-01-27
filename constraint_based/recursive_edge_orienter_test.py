@@ -47,30 +47,40 @@ def test_when_marked_path_exists():
 
     assert graph.get_unmarked_arrows() == set({('a', 'c')})
 
-@pytest.mark.focus
 def test_longer_marked_path_exists():
-    #   a -*> b -*> c -*> d
-    #    \               /
-    #      \           /
-    #       \        /
-    #         ------
+    #  A           B
+    #  |\        / |
+    #  | \      /  |
+    #  |  v    v   |
+    #  | --- C     |
+    #  | |   |     |
+    #  | |   |     |
+    #  | |   |     |
+    #  | |   D     |
+    #  | |   |     |
+    #  | |   |     |
+    #  | |   v     |
+    #  |-|---E-----|
+    #
     graph = MarkedPatternGraph(
-        nodes=['a', 'b', 'c', 'd']
+        nodes=['a', 'b', 'c', 'd', 'e']
     )
-    graph.add_undirected_edge(('a', 'b'))
+    graph.add_undirected_edge(('a', 'c'))
     graph.add_undirected_edge(('b', 'c'))
     graph.add_undirected_edge(('c', 'd'))
-    graph.add_undirected_edge(('a', 'd'))
+    graph.add_undirected_edge(('d', 'e'))
+    graph.add_undirected_edge(('c', 'e'))
+    graph.add_undirected_edge(('b', 'e'))
+    graph.add_undirected_edge(('a', 'e'))
 
-    graph.add_marked_arrowhead(('a', 'b'))
-    graph.add_marked_arrowhead(('b', 'c'))
-    graph.add_marked_arrowhead(('c', 'd'))
+    graph.add_arrowhead(('a', 'c'))
+    graph.add_arrowhead(('b', 'c'))
 
     RecursiveEdgeOrienter(
         marked_pattern_graph=graph
     ).orient()
 
-    assert graph.get_unmarked_arrows() == set({('a', 'd')})
+    assert graph.get_marked_arrows() == set({('c', 'd')})
 
 def test_firing_squad():
     undirected_edges = [

@@ -6,8 +6,6 @@ class RecursiveEdgeOrienter(object):
         self.marked_pattern_graph = marked_pattern_graph
 
     def orient(self):
-        # import pdb; pdb.set_trace()
-
         applied = True
 
         nodes = self.marked_pattern_graph.get_nodes_of_edges()
@@ -20,9 +18,6 @@ class RecursiveEdgeOrienter(object):
                 for node_2 in nodes:
                     if node_1 == node_2:
                         continue
-
-                    # if set({node_1, node_2}) == set({'a', 'c'}):
-                        # import pdb; pdb.set_trace()
 
                     if set({frozenset({node_1, node_2})}).intersection(edges) == set({}):
                         common_adj_nodes = get_common_adj_nodes_between_non_adj_nodes(
@@ -41,8 +36,6 @@ class RecursiveEdgeOrienter(object):
 
 
     def _apply_rule_1_to(self, node_1, node_2, common_adj_nodes):
-        # if node_1 == 'a' and node_2 == 'd':
-            # import pdb; pdb.set_trace()
         applied = False
 
         for common_adj_node in common_adj_nodes:
@@ -59,15 +52,10 @@ class RecursiveEdgeOrienter(object):
         return applied
 
     def _apply_rule_2_to(self, node_1, node_2):
-        # if (node_1 == 'd' and node_2 == 'c') \
-            # or (node_1 == 'b' and node_2 == 'a') \
-            # or (node_1 == 'c' and node_2 == 'b') \
-            # or (node_1 == 'a' and node_2 == 'd'):
-#
-            # import pdb; pdb.set_trace()
         if (not self.marked_pattern_graph.has_arrowhead((node_1, node_2))) \
             and self.marked_pattern_graph.has_marked_path((node_1, node_2)):
                 self.marked_pattern_graph.add_arrowhead((node_1, node_2))
+
 
                 print('node_1: {}, node_2: {}, dict: {}'.format(node_1, node_2, self.marked_pattern_graph.dict))
 
