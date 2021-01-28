@@ -55,5 +55,65 @@ def test_missing_data_because_of_ses():
     # we're able to recover the true mean
     assert reweighted_df['b'].mean() == approx(0.55, abs=0.015)
 
+def test_long_chains_collider_bias_with_MI(
+    df_long_chains_and_collider_with_MI,
+    df_long_chains_and_collider_without_MI
+):
 
+    size=10000
+    var_names = ['a', 'b', 'c', 'd', 'e', 'MI_b']
+
+    graph = MarkedPatternGraph(
+        nodes=var_names,
+        marked_arrows=[('c', 'MI_b')],
+        undirected_edges=[
+            ('a', 'b'),
+            ('b', 'c'),
+            ('e', 'd'),
+            ('d', 'c'),
+            ('b', 'd'), # extraneous edge
+        ]
+    )
+
+    df_no_missing = df_long_chains_and_collider_without_MI(size=size)
+    df_no_missing['count'] = 0
+
+    assert df_no_missing['b'].mean() == approx(0.175, abs=0.01)
+    no_missing_counts =  (df_no_missing.groupby(['b', 'd']).count()  / df_no_missing.groupby('d').count())['count']
+
+    # B & D are marginally independent
+    assert no_missing_counts.xs([False, False], level=['b', 'd']).values[0] \
+            == approx(1 - 0.175, abs=0.02)
+
+    assert no_missing_counts.xs([False, True], level=['b', 'd']).values[0] \
+            == approx(1 - 0.175, abs=0.02)
+
+    assert no_missing_counts.xs([True, False], level=['b', 'd']).values[0] \
+            == approx(0.175, abs=0.02)
+
+    assert no_missing_counts.xs([True, True], level=['b', 'd']).values[0] \
+            == approx(0.175, abs=0.02)
+
+    corrected_df = DensityRatioWeightedCorrection(
+        data=df_long_chains_and_collider_with_MI(size=size),
+        var_names=['b', 'd', 'MI_b'],
+        marked_pattern_graph=graph
+    ).correct()
+
+    corrected_df['count'] = 0
+
+    corrected_df_counts =  (corrected_df.groupby(['b', 'd']).count()  / corrected_df.groupby('d').count())['count']
+
+    # B & D are marginally independent
+    assert corrected_df_counts.xs([0, False], level=['b', 'd']).values[0] \
+            == approx(1 - 0.175, abs=0.02)
+
+    assert corrected_df_counts.xs([0, True], level=['b', 'd']).values[0] \
+            == approx(1 - 0.175, abs=0.02)
+
+    assert corrected_df_counts.xs([1, False], level=['b', 'd']).values[0] \
+            == approx(0.175, abs=0.02)
+
+    assert corrected_df_counts.xs([1, True], level=['b', 'd']).values[0] \
+            == approx(0.175, abs=0.02)
 
