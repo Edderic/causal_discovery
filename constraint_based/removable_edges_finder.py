@@ -1,7 +1,8 @@
 from .density_ratio_weighted_correction import DensityRatioWeightedCorrection
 from .ci_tests.bmd_is_independent import bmd_is_independent
 from .density_ratio_weighted_correction import DensityRatioWeightedCorrection
-from .misc import conditioning_sets_satisfying_conditional_independence
+from .misc import conditioning_sets_satisfying_conditional_independence, key_for_pair
+import re
 
 class RemovableEdgesFinder(object):
     """
@@ -23,14 +24,16 @@ class RemovableEdgesFinder(object):
         self,
         data,
         marked_pattern_graph,
+        cond_sets_satisfying_cond_indep,
         data_correction=DensityRatioWeightedCorrection,
         is_conditionally_independent_func=bmd_is_independent,
         potentially_extraneous_edges=[],
-        missingness_indicator_prefix='MI_'
+        missingness_indicator_prefix='MI_',
     ):
         self.data = data
         self.potentially_extraneous_edges = potentially_extraneous_edges
         self.marked_pattern_graph = marked_pattern_graph
+        self.cond_sets_satisfying_cond_indep = cond_sets_satisfying_cond_indep
         self.data_correction = data_correction
         self.is_conditionally_independent_func = is_conditionally_independent_func
         self.missingness_indicator_prefix = missingness_indicator_prefix
@@ -59,12 +62,21 @@ class RemovableEdgesFinder(object):
             )
 
             if len(cond_sets) > 0:
+                self.cond_sets_satisfying_cond_indep[key_for_pair((var_name_1, var_name_2))] = cond_sets
                 extraneous_edges.append(potentially_extraneous_edge)
 
         return extraneous_edges
 
     def _missingness_indicators(self):
-        return self.data.columns[self.data.columns.str.contains(self.missingness_indicator_prefix)]
+        nodes = self.marked_pattern_graph.get_nodes()
+
+        mi = []
+
+        for node in nodes:
+            if re.search(self.missingness_indicator_prefix, node):
+                mi.append(node)
+
+        return mi
 
     def _possible_conditioning_set_vars(self, var_name_1, var_name_2):
         return (

@@ -2,9 +2,12 @@ import pytest
 from .removable_edges_finder import RemovableEdgesFinder
 from ..graphs.marked_pattern_graph import MarkedPatternGraph
 from .density_ratio_weighted_correction import DensityRatioWeightedCorrection
+from .misc import key_for_pair
 
 def test_cond_on_collider(df_X_and_Y_cause_Z_and_Z_cause_MI_X):
     df = df_X_and_Y_cause_Z_and_Z_cause_MI_X(size=2000)
+
+    cond_sets = {}
 
     # extraneous edge x-y
     graph = MarkedPatternGraph(
@@ -15,6 +18,7 @@ def test_cond_on_collider(df_X_and_Y_cause_Z_and_Z_cause_MI_X):
 
     finder = RemovableEdgesFinder(
         data=df,
+        cond_sets_satisfying_cond_indep=cond_sets,
         marked_pattern_graph=graph,
         potentially_extraneous_edges=[set({'x', 'y'})],
         data_correction=DensityRatioWeightedCorrection,
@@ -23,6 +27,7 @@ def test_cond_on_collider(df_X_and_Y_cause_Z_and_Z_cause_MI_X):
     removables = finder.find()
 
     assert removables == [set({'x', 'y'})]
+    assert cond_sets[key_for_pair(('x','y'))] != set({})
 
 def test_long_chains_and_collider_with_MI(df_long_chains_and_collider_with_MI):
     df = df_long_chains_and_collider_with_MI(size=1000, proba_noise=0.6)
@@ -39,8 +44,11 @@ def test_long_chains_and_collider_with_MI(df_long_chains_and_collider_with_MI):
         marked_arrows=[('c', 'MI_b')]
     )
 
+    cond_sets = {}
+
     finder = RemovableEdgesFinder(
         data=df,
+        cond_sets_satisfying_cond_indep=cond_sets,
         marked_pattern_graph=graph,
         potentially_extraneous_edges=set({
             frozenset({'d', 'b'}),
@@ -51,6 +59,8 @@ def test_long_chains_and_collider_with_MI(df_long_chains_and_collider_with_MI):
     )
 
     removables = finder.find()
+
+    assert cond_sets[key_for_pair(('b','d'))] != set({})
 
     assert set(removables) == set({ frozenset({'b', 'd'}) })
 
@@ -74,8 +84,11 @@ def test_3_multinom_RVs_MAR(
         ]
     )
 
+    cond_sets = {}
+
     finder = RemovableEdgesFinder(
         data=df,
+        cond_sets_satisfying_cond_indep=cond_sets,
         marked_pattern_graph=graph,
         potentially_extraneous_edges=set({
             frozenset({'x', 'y'}),
@@ -87,12 +100,16 @@ def test_3_multinom_RVs_MAR(
 
     assert set(removables) == set({ frozenset({'x', 'y'}) })
 
+    assert cond_sets[key_for_pair(('x', 'y'))] != set({})
+
 def test_chain_and_collider_with_MI(
     df_chain_and_collider_with_MI
 ):
     size = 10000
 
     df = df_chain_and_collider_with_MI(size=size)
+
+    cond_sets = {}
 
     graph = MarkedPatternGraph(
         nodes=list(set(df.columns).union(set({'MI_y'}))),
@@ -117,6 +134,7 @@ def test_chain_and_collider_with_MI(
 
     finder = RemovableEdgesFinder(
         data=df,
+        cond_sets_satisfying_cond_indep=cond_sets,
         marked_pattern_graph=graph,
         potentially_extraneous_edges=set({
             frozenset({'a', 'c'}),
@@ -125,5 +143,7 @@ def test_chain_and_collider_with_MI(
     )
 
     removables = finder.find()
+
+    assert cond_sets[key_for_pair(('a', 'c'))] != set({})
 
     assert set(removables) == set({ frozenset({'a', 'c'}) })
