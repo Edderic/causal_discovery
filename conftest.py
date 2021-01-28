@@ -161,7 +161,7 @@ def df_long_chains_and_collider_without_MI(multinomial_RV):
         d = (pd.Series(e).isin([2,3])) & np.random.binomial(n=1, p=proba_noise + 0.15, size=size)
 
         # collider
-        c = b & d
+        c = b & d & np.random.binomial(n=1, p=0.8, size=size)
 
         df = pd.DataFrame(
             {
