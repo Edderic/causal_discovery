@@ -117,6 +117,15 @@ class MarkedPatternGraph(object):
     def add_nodes(self, nodes):
         self.nodes = list(set(self.nodes).union(set(nodes)))
 
+    def add_marked_arrows(self, marked_arrows):
+        """
+            Parameters:
+                marked_arrows: list or set of tuple[str]
+        """
+
+        for marked_arrow in list(marked_arrows):
+            self.add_marked_arrow(marked_arrow)
+
     def add_marked_arrow(self, marked_arrow):
         """
             Parameters:
@@ -141,6 +150,15 @@ class MarkedPatternGraph(object):
         self.dict[node_2][self.NO_ARROWHEAD] = \
             self.dict[node_2][self.NO_ARROWHEAD].union(set({node_1}))
 
+    def remove_undirected_edges(self, node_tuples):
+        """
+            Parameters:
+                node_tuples: list or set of tuple[str]
+        """
+
+        for node_tuple in list(node_tuples):
+            self.remove_undirected_edge(node_tuple)
+
     def remove_undirected_edge(self, node_tuple):
         """
             Parameters:
@@ -155,10 +173,27 @@ class MarkedPatternGraph(object):
         self.dict[node_2][self.NO_ARROWHEAD] = \
             self.dict[node_2][self.NO_ARROWHEAD] - set({node_1})
 
+    def add_arrowheads(self, node_tuples):
+        """
+            Parameters:
+                node_tuples: list or set of tuple[str]
+
+            Example:
+                If a node_tuple is (a,b) then we add an arrow toward b for
+                edge a to b.
+        """
+
+        for node_tuple in list(node_tuples):
+            self.add_arrowhead(node_tuple)
+
     def add_arrowhead(self, node_tuple):
         """
             Parameters:
                 node_tuple: tuple[str]
+
+            Example:
+                If node_tuple is (a,b) then we add an arrow toward b for
+                edge a to b.
         """
         node_1, node_2 = self._instantiate_node_tuple(node_tuple)
 
@@ -327,6 +362,9 @@ class MarkedPatternGraph(object):
 
         return self.get_neighbors(node_1).intersection(self.get_neighbors(node_2))
 
+    def get_nodes(self):
+        return list(self.dict.keys())
+
     def get_nodes_of_edges(self):
         edges = list(self.get_edges())
 
@@ -393,10 +431,12 @@ class MarkedPatternGraph(object):
                 self.dict[node_1][arrowhead_type] - set({node_2})
 
     def _instantiate_node_tuple(self, node_tuple):
-        assert len(node_tuple) == 2
+        _node_tuple = tuple(node_tuple)
 
-        node_1 = node_tuple[0]
-        node_2 = node_tuple[1]
+        assert len(_node_tuple) == 2
+
+        node_1 = _node_tuple[0]
+        node_2 = _node_tuple[1]
 
         if node_1 not in self.dict.keys():
             self._instantiate_dict_for_var(node_1)
@@ -405,11 +445,6 @@ class MarkedPatternGraph(object):
             self._instantiate_dict_for_var(node_2)
 
         return node_1, node_2
-
-    def remove_undirected_edges(self, edges_to_remove):
-        edges = list(edges_to_remove)
-        set_of_sets = [frozenset(edge) for edge in edges]
-        self.undirected_edges = set(self.undirected_edges) - set(set_of_sets)
 
     def graphviz(self):
         digraph = Digraph(comment='marked_pattern')
