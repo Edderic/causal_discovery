@@ -57,18 +57,20 @@ class PotentiallyExtraneousEdgesFinder(object):
         self.missingness_indicator_prefix = missingness_indicator_prefix
 
     def find(self):
-        # missingness indicators are not descendants of other variables, so
-        # this is MCAR.
-        if len(self.marked_pattern_graph.marked_arrows) == 0:
-            return [], self.marked_pattern_graph
+        # At this stage, we assume that anything in the marked arrows must be
+        # arrows pointing to missing indicators. If there's no marked_arrows,
+        # then values are missing completely at random (MCAR).
+        if len(self.marked_pattern_graph.get_marked_arrows()) == 0:
+            return set({})
 
         potentially_extraneous_edges = []
 
         for some_set in self._undirected_edges():
             node_1, node_2 = tuple(some_set)
 
-            common_nodes = self._get_adjacent_nodes(node_1)\
-                .intersection(self._get_adjacent_nodes(node_2))
+            common_nodes = self\
+                .marked_pattern_graph\
+                .get_common_neighbors(node_1, node_2)
 
             if len(common_nodes) > 0:
                 potentially_extraneous_edges.append(some_set)
@@ -92,5 +94,5 @@ class PotentiallyExtraneousEdgesFinder(object):
         return self.marked_pattern_graph.get_undirected_edges()
 
     def _marked_arrows(self):
-        return self.marked_pattern_graph.marked_arrows
+        return self.marked_pattern_graph.get_marked_arrows()
 
