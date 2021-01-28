@@ -106,9 +106,8 @@ def conditioning_sets_satisfying_conditional_independence(
                 _data = data_correction(
                     data=data,
                     var_names=set(cond_set_combo)\
-                              .union(set({var_name_1, var_name_2})),
-                    marked_pattern_graph=marked_pattern_graph
-                ).correct()
+                        .union(set({var_name_1, var_name_2})),
+                    marked_pattern_graph=marked_pattern_graph).correct()
             else:
                 _data = data
 
@@ -130,6 +129,7 @@ def key_for_pair(var_names):
     """
         Used for accessing the cond_sets_that_satisfy_cond_indep.
     """
-    var_names.sort()
-    return var_names[0] + ' _||_ ' + var_names[1]
+    _var_names = list(var_names)
+    _var_names.sort()
+    return _var_names[0] + ' _||_ ' + _var_names[1]
 
