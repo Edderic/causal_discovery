@@ -30,18 +30,6 @@ class MVICStar(object):
         self.missingness_indicator_prefix = missingness_indicator_prefix
 
     def predict(self):
-        graph_2 = MarkedPatternGraph(
-            nodes=['a','b','c', 'd', 'e'],
-            marked_arrows=[('c', 'MI_b')],
-            undirected_edges=[
-                ('a', 'b'),
-                ('b', 'c'),
-                ('e', 'd'),
-                ('d', 'c'),
-                ('b', 'd'), # extraneous edge
-            ]
-        )
-
         skeleton_finder = SkeletonFinder(
             var_names=self.orig_columns,
             data=self.data
@@ -59,12 +47,6 @@ class MVICStar(object):
             marked_pattern_graph=graph,
             missingness_indicator_prefix=self.missingness_indicator_prefix
         ).find()
-
-        corrected_df = DensityRatioWeightedCorrection(
-            data=self.data,
-            var_names=['b', 'd'],
-            marked_pattern_graph=graph_2
-        ).correct()
 
         edges_to_remove = RemovableEdgesFinder(
             data=self.data,
