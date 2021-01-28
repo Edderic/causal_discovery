@@ -61,7 +61,7 @@ def test_long_chains_collider_bias_with_MI(
 ):
 
     size=10000
-    var_names = ['a', 'b', 'c', 'd', 'e', 'MI_b']
+    var_names = ['a', 'b', 'c', 'd', 'e']
 
     graph = MarkedPatternGraph(
         nodes=var_names,
@@ -96,7 +96,7 @@ def test_long_chains_collider_bias_with_MI(
 
     corrected_df = DensityRatioWeightedCorrection(
         data=df_long_chains_and_collider_with_MI(size=size),
-        var_names=['b', 'd', 'MI_b'],
+        var_names=['b', 'd'],
         marked_pattern_graph=graph
     ).correct()
 

@@ -194,5 +194,5 @@ class DensityRatioWeightedCorrection(object):
         return [self.missingness_indicator_prefix + parent for parent in parents]
 
     def _marked_arrows(self):
-        return self.marked_pattern_graph.marked_arrows
+        return self.marked_pattern_graph.get_marked_arrows()
 
