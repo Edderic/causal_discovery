@@ -1,6 +1,6 @@
 import pytest
-from .marked_pattern_graph import MarkedPatternGraph
-from .marked_pattern_graph import get_common_adj_nodes_between_non_adj_nodes
+from graphs.marked_pattern_graph import MarkedPatternGraph
+from graphs.marked_pattern_graph import get_common_adj_nodes_between_non_adj_nodes
 
 def test_add_undirected_edge():
     graph = MarkedPatternGraph(nodes=['a', 'b'])
