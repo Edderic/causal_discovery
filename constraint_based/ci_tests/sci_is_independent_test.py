@@ -1,6 +1,6 @@
 import pandas as pd
 import pytest
-from .sci_is_independent import sci_is_independent
+from constraint_based.ci_tests.sci_is_independent import sci_is_independent
 
 def test_long_chains_collider_bias_without_MI(
     df_long_chains_and_collider_without_MI
