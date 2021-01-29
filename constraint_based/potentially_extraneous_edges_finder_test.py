@@ -1,7 +1,7 @@
 import pytest
 import pandas as pd
-from ..graphs.marked_pattern_graph import MarkedPatternGraph
-from .potentially_extraneous_edges_finder import PotentiallyExtraneousEdgesFinder
+from graphs.marked_pattern_graph import MarkedPatternGraph
+from constraint_based.potentially_extraneous_edges_finder import PotentiallyExtraneousEdgesFinder
 
 def test_mcar():
     marked_pattern_graph = MarkedPatternGraph(
@@ -12,8 +12,10 @@ def test_mcar():
         marked_pattern_graph=marked_pattern_graph
     )
 
-    potentially_extraneous_edges, marked_pattern = potentially_extraneous_edges_finder.find()
-    assert potentially_extraneous_edges == []
+    potentially_extraneous_edges = \
+        potentially_extraneous_edges_finder.find()
+
+    assert potentially_extraneous_edges == set({})
 
 def test_mar():
     undirected_edges = [
