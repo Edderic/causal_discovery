@@ -2,7 +2,7 @@ import pytest
 from graphs.marked_pattern_graph import MarkedPatternGraph
 from graphs.marked_pattern_graph import get_common_adj_nodes_between_non_adj_nodes
 
-def test_copy():
+def test_equals_same():
     var_names = ['a', 'b', 'c', 'd', 'e']
 
     graph_1 = MarkedPatternGraph(
@@ -14,6 +14,12 @@ def test_copy():
             ('e', 'd'),
             ('d', 'c'),
             ('b', 'd'), # extraneous edge
+        ],
+        unmarked_arrows=[
+            ('a', 'e')
+        ],
+        bidirectional_edges=[
+            ('a', 'b')
         ]
     )
 
@@ -26,10 +32,153 @@ def test_copy():
             ('e', 'd'),
             ('d', 'c'),
             ('b', 'd'), # extraneous edge
+        ],
+        unmarked_arrows=[
+            ('a', 'e')
+        ],
+        bidirectional_edges=[
+            ('a', 'b')
         ]
     )
 
     assert graph_1 == graph_2
+
+def test_equals_bidirectional_diff():
+    var_names = ['a', 'b', 'c', 'd', 'e']
+
+    graph_1 = MarkedPatternGraph(
+        nodes=var_names,
+        marked_arrows=[('c', 'MI_b')],
+        undirected_edges=[
+            ('a', 'b'),
+            ('b', 'c'),
+            ('e', 'd'),
+            ('d', 'c'),
+            ('b', 'd'),
+        ],
+        unmarked_arrows=[
+            ('a', 'e')
+        ],
+        bidirectional_edges=[] # diff
+    )
+
+    graph_2 = MarkedPatternGraph(
+        nodes=var_names,
+        marked_arrows=[('c', 'MI_b')],
+        undirected_edges=[
+            ('a', 'b'),
+            ('b', 'c'),
+            ('e', 'd'),
+            ('d', 'c'),
+            ('b', 'd'),
+        ],
+        unmarked_arrows=[
+            ('a', 'e')
+        ],
+        bidirectional_edges=[
+            ('a', 'b')
+        ]
+    )
+
+    assert graph_1 != graph_2
+
+def test_equals_undirected_edges_diff():
+    var_names = ['a', 'b', 'c', 'd', 'e']
+
+    graph_1 = MarkedPatternGraph(
+        nodes=var_names,
+        marked_arrows=[('c', 'MI_b')],
+        undirected_edges=[
+            ('a', 'b'),
+            ('b', 'c'),
+            ('e', 'd'),
+            ('d', 'c'),
+            ('b', 'd'),
+        ],
+        unmarked_arrows=[],
+        bidirectional_edges=[]
+    )
+
+    graph_2 = MarkedPatternGraph(
+        nodes=var_names,
+        marked_arrows=[('c', 'MI_b')],
+        undirected_edges=[
+            ('a', 'b'),
+            ('b', 'c'),
+            ('e', 'd'),
+            ('d', 'c'),
+        ],
+        unmarked_arrows=[],
+        bidirectional_edges=[]
+    )
+
+    assert graph_1 != graph_2
+
+def test_equals_marked_arrows_diff():
+    var_names = ['a', 'b', 'c', 'd', 'e']
+
+    graph_1 = MarkedPatternGraph(
+        nodes=var_names,
+        marked_arrows=[],
+        undirected_edges=[
+            ('a', 'b'),
+            ('b', 'c'),
+            ('e', 'd'),
+            ('d', 'c'),
+        ],
+        unmarked_arrows=[],
+        bidirectional_edges=[]
+    )
+
+    graph_2 = MarkedPatternGraph(
+        nodes=var_names,
+        marked_arrows=[('c', 'MI_b')],
+        undirected_edges=[
+            ('a', 'b'),
+            ('b', 'c'),
+            ('e', 'd'),
+            ('d', 'c'),
+        ],
+        unmarked_arrows=[],
+        bidirectional_edges=[]
+    )
+
+    assert graph_1 != graph_2
+
+def test_equals_unmarked_arrows_diff():
+    var_names = ['a', 'b', 'c', 'd', 'e']
+
+    graph_1 = MarkedPatternGraph(
+        nodes=var_names,
+        marked_arrows=[('c', 'MI_b')],
+        undirected_edges=[
+            ('a', 'b'),
+            ('b', 'c'),
+            ('e', 'd'),
+            ('d', 'c'),
+            ('b', 'd'),
+        ],
+        unmarked_arrows=[
+            ('a', 'e')
+        ],
+        bidirectional_edges=[]
+    )
+
+    graph_2 = MarkedPatternGraph(
+        nodes=var_names,
+        marked_arrows=[('c', 'MI_b')],
+        undirected_edges=[
+            ('a', 'b'),
+            ('b', 'c'),
+            ('e', 'd'),
+            ('d', 'c'),
+            ('b', 'd'),
+        ],
+        unmarked_arrows=[], # unmarked arrows diff
+        bidirectional_edges=[]
+    )
+
+    assert graph_1 != graph_2
 
 def test_add_undirected_edge():
     graph = MarkedPatternGraph(nodes=['a', 'b'])

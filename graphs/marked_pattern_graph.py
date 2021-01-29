@@ -82,7 +82,7 @@ class MarkedPatternGraph(object):
                 E.g. [('a', 'b'), ('b', 'c')] => a -*-> b, b -*-> c
             unmarked_arrows: list[tuple[str]]
                 E.g. [('a', 'b'), ('b', 'c')] => a ---> b, b ---> c
-            bidirected_edges: list[sets[str]]
+            bidirectional_edges: list[sets[str]]
                 E.g. [set(('a', 'b')), set(('b', 'c'))] => a <--> b, b <--> c
             undirected_edges: list[sets[str]]
                 E.g. [set(('a', 'b')), set(('b', 'c'))] => a ---- b, b ---- c
@@ -93,7 +93,7 @@ class MarkedPatternGraph(object):
         nodes,
         marked_arrows=[],
         unmarked_arrows=[],
-        bidirected_edges=[],
+        bidirectional_edges=[],
         undirected_edges=[],
         missingness_indicator_prefix='MI_'
     ):
@@ -102,15 +102,11 @@ class MarkedPatternGraph(object):
         self.nodes = nodes
         self.dict = {}
 
-        self.marked_arrows = marked_arrows
-        self.unmarked_arrows = unmarked_arrows
-        self.bidirected_edges = bidirected_edges
+        self.add_bidirectional_edges(bidirectional_edges)
 
-        for undirected_edge in list(undirected_edges):
-            self.add_undirected_edge(tuple(undirected_edge))
-
-        for marked_arrow in list(marked_arrows):
-            self.add_marked_arrow(tuple(marked_arrow))
+        self.add_unmarked_arrows(unmarked_arrows)
+        self.add_undirected_edges(undirected_edges)
+        self.add_marked_arrows(marked_arrows)
 
         self.missingness_indicator_prefix = missingness_indicator_prefix
 
@@ -125,6 +121,23 @@ class MarkedPatternGraph(object):
 
         for marked_arrow in list(marked_arrows):
             self.add_marked_arrow(marked_arrow)
+
+    def add_unmarked_arrows(self, unmarked_arrows):
+        """
+            Parameters:
+                unmarked_arrows: list or set of tuple[str]
+        """
+
+        self.add_undirected_edges(unmarked_arrows)
+        self.add_arrowheads(unmarked_arrows)
+
+    def add_unmarked_arrow(self, unmarked_arrow):
+        """
+            Parameters:
+                unmarked_arrow: tuple[str]
+        """
+
+        self.add_arrowhead(unmarked_arrow)
 
     def add_marked_arrow(self, marked_arrow):
         """
@@ -150,28 +163,61 @@ class MarkedPatternGraph(object):
         self.dict[node_2][self.NO_ARROWHEAD] = \
             self.dict[node_2][self.NO_ARROWHEAD].union(set({node_1}))
 
-    def remove_undirected_edges(self, node_tuples):
+    def add_undirected_edges(self, undirected_edges):
         """
             Parameters:
-                node_tuples: list or set of tuple[str]
+                undirected_edges: list or set of tuple[str]
         """
 
-        for node_tuple in list(node_tuples):
-            self.remove_undirected_edge(node_tuple)
+        for undirected_edge in list(undirected_edges):
+            self.add_undirected_edge(undirected_edge)
 
-    def remove_undirected_edge(self, node_tuple):
+    def remove_undirected_edges(self, undirected_edges):
         """
             Parameters:
-                node_tuple: tuple[str]
+                undirected_edges: list or set of tuple[str]
         """
 
-        node_1, node_2 = self._instantiate_node_tuple(node_tuple)
+        for undirected_edge in list(undirected_edges):
+            self.remove_undirected_edge(undirected_edge)
+
+    def remove_undirected_edge(self, undirected_edge):
+        """
+            Parameters:
+                undirected_edge: tuple[str]
+        """
+
+        node_1, node_2 = self._instantiate_node_tuple(undirected_edge)
 
         self.dict[node_1][self.NO_ARROWHEAD] = \
             self.dict[node_1][self.NO_ARROWHEAD] - set({node_2})
 
         self.dict[node_2][self.NO_ARROWHEAD] = \
             self.dict[node_2][self.NO_ARROWHEAD] - set({node_1})
+
+    def add_bidirectional_edges(self, bidirectional_edges):
+        """
+            Parameters:
+                node_tuples: list or set of tuple[str]
+
+            Example:
+                If a node_tuple is (a,b) then a <--> b.
+        """
+        for node_tuple in list(bidirectional_edges):
+            self.add_bidirectional_edge(node_tuple)
+
+    def add_bidirectional_edge(self, bidirectional_edge):
+        """
+            Parameters:
+                bidirectional_edge: tuple[str]
+
+            Example:
+                If a node_tuple is (a,b) then a <--> b.
+        """
+        node_1, node_2 = tuple(bidirectional_edge)
+
+        self.add_arrowhead((node_1, node_2))
+        self.add_arrowhead((node_2, node_1))
 
     def add_arrowheads(self, node_tuples):
         """
