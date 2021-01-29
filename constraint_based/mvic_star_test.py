@@ -1,5 +1,5 @@
 import pytest
-from .mvic_star import MVICStar
+from constraint_based.mvic_star import MVICStar
 
 def test_long_chains_and_collider_with_MI(df_long_chains_and_collider_with_MI):
     df = df_long_chains_and_collider_with_MI(size=50000)

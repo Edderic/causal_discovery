@@ -10,14 +10,14 @@
     Functions:
         - conditioning_sets_satisfying_conditional_independence
 """
-from .skeleton_finder import SkeletonFinder
-from .direct_causes_of_missingness_finder import DirectCausesOfMissingnessFinder
-from .potentially_extraneous_edges_finder import PotentiallyExtraneousEdgesFinder
-from .removable_edges_finder import RemovableEdgesFinder
-from .immoralities_finder import ImmoralitiesFinder
-from .density_ratio_weighted_correction import DensityRatioWeightedCorrection
-from .recursive_edge_orienter import RecursiveEdgeOrienter
-from ..graphs.marked_pattern_graph import MarkedPatternGraph
+from constraint_based.skeleton_finder import SkeletonFinder
+from constraint_based.direct_causes_of_missingness_finder import DirectCausesOfMissingnessFinder
+from constraint_based.potentially_extraneous_edges_finder import PotentiallyExtraneousEdgesFinder
+from constraint_based.removable_edges_finder import RemovableEdgesFinder
+from constraint_based.immoralities_finder import ImmoralitiesFinder
+from constraint_based.density_ratio_weighted_correction import DensityRatioWeightedCorrection
+from constraint_based.recursive_edge_orienter import RecursiveEdgeOrienter
+from graphs.marked_pattern_graph import MarkedPatternGraph
 
 class MVICStar(object):
     def __init__(
