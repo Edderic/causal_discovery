@@ -98,6 +98,7 @@ def df_X_and_Y_cause_Z_and_Z_cause_MI_X(df_X_and_Y_cause_Z):
 
 @pytest.fixture
 def df_X_Y_indep_Y_causes_MI_X(df_2_multinomial_indep_RVs):
+    #  X  Y -*> MI_x
     def _setup(size=10000, proba_noise=0.1):
 
         df = df_2_multinomial_indep_RVs(size=size)
