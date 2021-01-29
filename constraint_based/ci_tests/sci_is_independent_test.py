@@ -103,7 +103,7 @@ def test_X_and_Y_cause_Z(
     df_X_and_Y_cause_Z
 ):
     params_1 = {
-       "data": df_X_and_Y_cause_Z(size=500),
+       "data": df_X_and_Y_cause_Z(size=1000),
        "vars_1": ['x'],
        "vars_2": ['y'],
        "conditioning_set": []
@@ -112,7 +112,7 @@ def test_X_and_Y_cause_Z(
     assert sci_is_independent(**params_1) == True
 
     params_2 = {
-       "data": df_X_and_Y_cause_Z(size=500),
+       "data": df_X_and_Y_cause_Z(size=1000),
        "vars_1": ['x'],
        "vars_2": ['y'],
        "conditioning_set": ['z']
