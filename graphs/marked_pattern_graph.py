@@ -363,7 +363,7 @@ class MarkedPatternGraph(object):
         return self.get_neighbors(node_1).intersection(self.get_neighbors(node_2))
 
     def get_nodes(self):
-        return list(self.dict.keys())
+        return list(set(self.dict.keys()).union(self.nodes))
 
     def get_nodes_of_edges(self):
         edges = list(self.get_edges())
