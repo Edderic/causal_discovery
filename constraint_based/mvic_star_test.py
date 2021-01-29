@@ -72,7 +72,7 @@ def test_chain_and_collider_without_MI(df_chain_and_collider_without_MI):
     assert graph.get_marked_arrows() == set({})
 
 def test_Z_causes_X_Y_and_X_Z_causes_MI_Y(df_Z_causes_X_Y_and_X_Z_causes_MI_Y):
-    df = df_Z_causes_X_Y_and_X_Z_causes_MI_Y()
+    df = df_Z_causes_X_Y_and_X_Z_causes_MI_Y(size=10000)
 
     graph = MVICStar(
         data=df
