@@ -2,6 +2,35 @@ import pytest
 from graphs.marked_pattern_graph import MarkedPatternGraph
 from graphs.marked_pattern_graph import get_common_adj_nodes_between_non_adj_nodes
 
+def test_copy():
+    var_names = ['a', 'b', 'c', 'd', 'e']
+
+    graph_1 = MarkedPatternGraph(
+        nodes=var_names,
+        marked_arrows=[('c', 'MI_b')],
+        undirected_edges=[
+            ('a', 'b'),
+            ('b', 'c'),
+            ('e', 'd'),
+            ('d', 'c'),
+            ('b', 'd'), # extraneous edge
+        ]
+    )
+
+    graph_2 = MarkedPatternGraph(
+        nodes=var_names,
+        marked_arrows=[('c', 'MI_b')],
+        undirected_edges=[
+            ('a', 'b'),
+            ('b', 'c'),
+            ('e', 'd'),
+            ('d', 'c'),
+            ('b', 'd'), # extraneous edge
+        ]
+    )
+
+    assert graph_1 == graph_2
+
 def test_add_undirected_edge():
     graph = MarkedPatternGraph(nodes=['a', 'b'])
     graph.add_undirected_edge(('a', 'b'))
