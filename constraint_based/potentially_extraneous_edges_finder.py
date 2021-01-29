@@ -46,15 +46,12 @@ class PotentiallyExtraneousEdgesFinder(object):
                         directed arrows have the same missingness indicator
                         prefix below.
 
-            missingness_indicator_prefix: str. Defaults to "MI_".
     """
     def __init__(
         self,
-        marked_pattern_graph,
-        missingness_indicator_prefix = "MI_"
+        marked_pattern_graph
     ):
         self.marked_pattern_graph = marked_pattern_graph
-        self.missingness_indicator_prefix = missingness_indicator_prefix
 
     def find(self):
         # At this stage, we assume that anything in the marked arrows must be
