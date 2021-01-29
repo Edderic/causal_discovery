@@ -1,5 +1,5 @@
-from ..graphs.marked_pattern_graph import get_nodes_from_edges
-from .misc import key_for_pair
+from graphs.marked_pattern_graph import get_nodes_from_edges
+from constraint_based.misc import key_for_pair
 
 class ImmoralitiesFinder(object):
     """

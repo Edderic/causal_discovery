@@ -1,6 +1,6 @@
 import pytest
-from ..graphs.marked_pattern_graph import MarkedPatternGraph
-from .immoralities_finder import ImmoralitiesFinder
+from graphs.marked_pattern_graph import MarkedPatternGraph
+from constraint_based.immoralities_finder import ImmoralitiesFinder
 
 def test_simple_chain():
     graph = MarkedPatternGraph(
