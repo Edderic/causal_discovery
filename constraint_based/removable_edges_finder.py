@@ -68,7 +68,7 @@ class RemovableEdgesFinder(object):
         return extraneous_edges
 
     def _missingness_indicators(self):
-        nodes = self.marked_pattern_graph.get_nodes()
+        nodes = list(self.marked_pattern_graph.get_nodes())
 
         mi = []
 
