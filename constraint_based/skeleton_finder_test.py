@@ -67,7 +67,7 @@ def test_long_chains_collider_bias_without_MI(
 def test_long_chains_collider_bias_with_MI(
     df_long_chains_and_collider_with_MI
 ):
-    size = 10000
+    size = 100000
 
     df = df_long_chains_and_collider_with_MI(size=size, proba_noise=0.7)
     skeleton_finder = SkeletonFinder(
