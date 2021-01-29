@@ -1,5 +1,5 @@
-from .ci_tests.bmd_is_independent import bmd_is_independent
-from .misc import conditioning_sets_satisfying_conditional_independence
+from constraint_based.ci_tests.bmd_is_independent import bmd_is_independent
+from constraint_based.misc import conditioning_sets_satisfying_conditional_independence
 
 class DirectCausesOfMissingnessFinder(object):
     """

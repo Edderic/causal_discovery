@@ -1,8 +1,8 @@
 import numpy as np
 import pytest
-from .skeleton_finder import SkeletonFinder
-from .direct_causes_of_missingness_finder import DirectCausesOfMissingnessFinder
-from ..graphs.marked_pattern_graph import MarkedPatternGraph
+from constraint_based.skeleton_finder import SkeletonFinder
+from constraint_based.direct_causes_of_missingness_finder import DirectCausesOfMissingnessFinder
+from graphs.marked_pattern_graph import MarkedPatternGraph
 
 def test_2_multinom_RVs_MCAR(
     df_2_multinomial_indep_RVs
