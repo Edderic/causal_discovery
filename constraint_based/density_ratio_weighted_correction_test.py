@@ -2,8 +2,8 @@ import pytest
 import pandas as pd
 import numpy as np
 from pytest import approx
-from ..graphs.marked_pattern_graph import MarkedPatternGraph
-from .density_ratio_weighted_correction import DensityRatioWeightedCorrection
+from graphs.marked_pattern_graph import MarkedPatternGraph
+from constraint_based.density_ratio_weighted_correction import DensityRatioWeightedCorrection
 
 def test_missing_data_because_of_ses():
     size = 10000
