@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from .skeleton_finder import SkeletonFinder
+from constraint_based.skeleton_finder import SkeletonFinder
 
 def test_2_multinom_RVs(df_2_multinomial_indep_RVs):
     skeleton_finder = SkeletonFinder(
@@ -25,7 +25,7 @@ def test_skeleton_finder_X_causes_Y(df_X_causes_Y):
     assert cond_sets_satisfying_cond_indep == {}
 
 def test_skeleton_finder_Z_causes_X_and_Y(df_Z_causes_X_and_Y):
-    var_names = ['x', 'y', 'z', 'MI_x', 'MI_y', 'MI_z']
+    var_names = ['x', 'y', 'z']
 
     skeleton_finder = SkeletonFinder(
         data=df_Z_causes_X_and_Y(size=1000),
@@ -117,7 +117,7 @@ def test_chain_and_collider_without_MI(
 def test_chain_and_collider_with_MI(
     df_chain_and_collider_with_MI
 ):
-    size = 7000
+    size = 10000
 
     df = df_chain_and_collider_with_MI(size=size)
     skeleton_finder = SkeletonFinder(

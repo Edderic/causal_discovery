@@ -1,7 +1,7 @@
-from .ci_tests.bmd_is_independent import bmd_is_independent
+from constraint_based.ci_tests.bmd_is_independent import bmd_is_independent
 from itertools import combinations
-from .misc import conditioning_sets_satisfying_conditional_independence, key_for_pair
-from ..graphs.marked_pattern_graph import MarkedPatternGraph
+from constraint_based.misc import conditioning_sets_satisfying_conditional_independence, key_for_pair
+from graphs.marked_pattern_graph import MarkedPatternGraph
 
 class SkeletonFinder():
     """
@@ -26,11 +26,8 @@ class SkeletonFinder():
         only_find_one=False
     ):
         self.var_names = var_names
-        self.data = data.merge(
-            data.isnull().add_prefix(missing_indicator_prefix),
-            left_index=True,
-            right_index=True
-        )
+
+        self.data = data
         self.orig_cols = list(data.columns)
         self.is_conditionally_independent_func = is_conditionally_independent_func
         self.indegree = indegree
