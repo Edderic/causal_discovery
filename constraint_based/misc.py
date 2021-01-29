@@ -1,6 +1,5 @@
 import numpy as np
 from itertools import combinations
-from ..graphs.marked_pattern_graph import MarkedPatternGraph
 
 """
     Misc
