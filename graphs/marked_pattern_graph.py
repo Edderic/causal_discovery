@@ -531,6 +531,15 @@ class MarkedPatternGraph(object):
 
         return mi
 
+    def copy(self):
+        return MarkedPatternGraph(
+            nodes=self.get_nodes(),
+            marked_arrows=self.get_marked_arrows(),
+            unmarked_arrows=self.get_unmarked_arrows(),
+            undirected_edges=self.get_undirected_edges(),
+            bidirectional_edges=self.get_bidirectional_edges(),
+        )
+
     def __eq__(self, other):
         return (self.get_nodes() == other.get_nodes()) \
             and (

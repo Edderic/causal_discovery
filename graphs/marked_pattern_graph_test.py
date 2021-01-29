@@ -114,6 +114,26 @@ def test_equals_undirected_edges_diff():
 
     assert graph_1 != graph_2
 
+def test_copy_equals():
+    var_names = ['a', 'b', 'c', 'd', 'e']
+
+    graph_1 = MarkedPatternGraph(
+        nodes=var_names,
+        marked_arrows=[('c', 'MI_b')],
+        undirected_edges=[
+            ('a', 'b'),
+            ('b', 'c'),
+            ('e', 'd'),
+            ('d', 'c'),
+        ],
+        unmarked_arrows=[],
+        bidirectional_edges=[]
+    )
+
+    graph_2 = graph_1.copy()
+
+    assert graph_1 == graph_2
+
 def test_equals_marked_arrows_diff():
     var_names = ['a', 'b', 'c', 'd', 'e']
 
