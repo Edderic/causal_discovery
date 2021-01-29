@@ -5,6 +5,35 @@ from pytest import approx
 from graphs.marked_pattern_graph import MarkedPatternGraph
 from constraint_based.density_ratio_weighted_correction import DensityRatioWeightedCorrection
 
+def test_deterministic_cause_of_missingness():
+    size = 1000
+    x = np.random.binomial(n=1, p=0.6, size=size)
+    y = np.random.binomial(n=1, p=0.3, size=size)
+    z = np.random.binomial(n=1, p=0.3, size=size)
+
+    missing = np.where(x == 1)[0]
+
+    df = pd.DataFrame({
+        'x': x,
+        'y': y,
+        'z': z,
+    })
+
+    df.at[missing, 'z'] = np.nan
+
+    graph = MarkedPatternGraph(
+        nodes=['x', 'y', 'z', 'MI_z'],
+        marked_arrows=[('x', 'MI_z')]
+    )
+
+    corrector = DensityRatioWeightedCorrection(
+        data=df,
+        var_names=['x', 'y', 'z'],
+        marked_pattern_graph=graph
+    )
+
+    assert 1
+
 def test_missing_data_because_of_ses():
     size = 10000
 
