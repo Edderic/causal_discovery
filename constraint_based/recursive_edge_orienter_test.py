@@ -1,6 +1,6 @@
 import pytest
-from ..graphs.marked_pattern_graph import MarkedPatternGraph
-from .recursive_edge_orienter import RecursiveEdgeOrienter
+from graphs.marked_pattern_graph import MarkedPatternGraph
+from constraint_based.recursive_edge_orienter import RecursiveEdgeOrienter
 
 def test_simple():
     #  a     c

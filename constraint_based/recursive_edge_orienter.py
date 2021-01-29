@@ -1,4 +1,4 @@
-from ..graphs.marked_pattern_graph import MarkedPatternGraph
+from graphs.marked_pattern_graph import MarkedPatternGraph
 
 class RecursiveEdgeOrienter(object):
     """
