@@ -1,8 +1,8 @@
 import pytest
-from .removable_edges_finder import RemovableEdgesFinder
-from ..graphs.marked_pattern_graph import MarkedPatternGraph
-from .density_ratio_weighted_correction import DensityRatioWeightedCorrection
-from .misc import key_for_pair
+from constraint_based.removable_edges_finder import RemovableEdgesFinder
+from graphs.marked_pattern_graph import MarkedPatternGraph
+from constraint_based.density_ratio_weighted_correction import DensityRatioWeightedCorrection
+from constraint_based.misc import key_for_pair
 
 def test_cond_on_collider(df_X_and_Y_cause_Z_and_Z_cause_MI_X):
     df = df_X_and_Y_cause_Z_and_Z_cause_MI_X(size=2000)

@@ -1,7 +1,7 @@
-from .density_ratio_weighted_correction import DensityRatioWeightedCorrection
-from .ci_tests.bmd_is_independent import bmd_is_independent
-from .density_ratio_weighted_correction import DensityRatioWeightedCorrection
-from .misc import conditioning_sets_satisfying_conditional_independence, key_for_pair
+from constraint_based.density_ratio_weighted_correction import DensityRatioWeightedCorrection
+from constraint_based.ci_tests.bmd_is_independent import bmd_is_independent
+from constraint_based.density_ratio_weighted_correction import DensityRatioWeightedCorrection
+from constraint_based.misc import conditioning_sets_satisfying_conditional_independence, key_for_pair
 import re
 
 class RemovableEdgesFinder(object):
