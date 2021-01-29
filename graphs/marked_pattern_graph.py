@@ -449,20 +449,28 @@ class MarkedPatternGraph(object):
     def graphviz(self):
         digraph = Digraph(comment='marked_pattern')
 
-        for node in self.nodes:
+        nodes = list(self.get_nodes())
+
+        for node in nodes:
             digraph.node(node)
 
-        for from_node, to_node in list(self.marked_arrows):
+        marked_arrows = list(self.get_marked_arrows())
+
+        for from_node, to_node in marked_arrows:
             digraph.edge(from_node, to_node, label="*")
 
-        for from_node, to_node in list(self.unmarked_arrows):
+        unmarked_arrows = list(self.get_unmarked_arrows())
+
+        for from_node, to_node in unmarked_arrows:
             digraph.edge(from_node, to_node)
 
-        for edge_set in list(self.bidirected_edges):
+        bidirectional_edges = list(self.get_bidirectional_edges())
+        for edge_set in bidirectional_edges:
             edges = list(edge_set)
             digraph.edge(edges[0], edges[1], _attributes={"dir": "both"})
 
-        for edge_set in list(self.undirected_edges):
+        undirected_edges = list(self.get_undirected_edges())
+        for edge_set in undirected_edges:
             edges = list(edge_set)
             digraph.edge(edges[0], edges[1], _attributes={"dir": "none"})
 
