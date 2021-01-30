@@ -42,7 +42,7 @@ class MVICStar(object):
         self.debug_info.append({
             'name': 'after skeleton finding',
             'graph': graph.copy(),
-            'cond_sets_satisfying_cond_indep': cond_sets_satisfying_cond_indep
+            'cond_sets_satisfying_cond_indep': dict(cond_sets_satisfying_cond_indep)
         })
 
         marked_arrows = DirectCausesOfMissingnessFinder(
@@ -74,7 +74,8 @@ class MVICStar(object):
 
         self.debug_info.append({
             'name': 'after removing undirected edges',
-            'graph': graph.copy()
+            'graph': graph.copy(),
+            'cond_sets_satisfying_cond_indep': dict(cond_sets_satisfying_cond_indep)
         })
 
         immoralities = ImmoralitiesFinder(
