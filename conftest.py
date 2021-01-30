@@ -267,3 +267,18 @@ def df_chain_and_collider_with_MI(df_chain_and_collider_without_MI):
         return df
 
     yield _setup
+
+@pytest.fixture
+def df_2_deterministic_and_3rd_var_caused_by_one_of_them():
+    #   X -> Y -> Z
+    #   X and Y are deterministic
+    #
+    def _setup(size=10000, proba_noise=0.8):
+
+        x = np.random.binomial(n=1, p=1-proba_noise, size=size)
+        y = np.copy(x) # deterk
+        z = y * np.random.binomial(n=1, p=1-proba_noise, size=size)
+
+        return pd.DataFrame({'x': x, 'y': y, 'z': z})
+
+    yield _setup

@@ -2,6 +2,21 @@ import pytest
 import numpy as np
 from constraint_based.skeleton_finder import SkeletonFinder
 
+# SkeletonFinder is missing an edge because the distribution we used is
+# unstable. It has independencies that is incompatible with the true DAG
+def test_2_deterministic_and_3rd_var_caused_by_one_of_them(
+    df_2_deterministic_and_3rd_var_caused_by_one_of_them
+):
+    skeleton_finder = SkeletonFinder(
+        data=df_2_deterministic_and_3rd_var_caused_by_one_of_them(size=1000),
+        var_names=['x', 'y', 'z'],
+    )
+
+    graph, cond_sets_satisfying_cond_indep = skeleton_finder.find()
+
+    assert graph.get_undirected_edges() == set({frozenset({'x', 'y'})})
+    assert graph.get_nodes() == set({'x', 'y', 'z'})
+
 def test_2_multinom_RVs(df_2_multinomial_indep_RVs):
     skeleton_finder = SkeletonFinder(
         data=df_2_multinomial_indep_RVs(size=10000),
