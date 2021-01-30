@@ -276,7 +276,7 @@ def df_2_deterministic_and_3rd_var_caused_by_one_of_them():
     def _setup(size=10000, proba_noise=0.8):
 
         x = np.random.binomial(n=1, p=1-proba_noise, size=size)
-        y = np.copy(x) # deterk
+        y = np.copy(x) # deterministic
         z = y * np.random.binomial(n=1, p=1-proba_noise, size=size)
 
         return pd.DataFrame({'x': x, 'y': y, 'z': z})

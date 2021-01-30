@@ -57,6 +57,21 @@ def test_cmi_indep_X_causes_Y(
     assert conditional_mutual_information(**params) \
         != approx(0, abs=0.01)
 
+@pytest.mark.focus
+def test_cmi_deterministic(
+    df_X_and_Y_are_deterministic
+):
+    params = {
+       "data": df_X_and_Y_are_deterministic(size=100),
+       "vars_1": ['x'],
+       "vars_2": ['y'],
+       "conditioning_set": []
+    }
+
+    cmi = conditional_mutual_information(**params)
+    assert cmi  \
+        != approx(0, abs=0.01)
+
 def test_cmi_indep_Z_causes_X_and_Y(
     df_Z_causes_X_and_Y
 ):
