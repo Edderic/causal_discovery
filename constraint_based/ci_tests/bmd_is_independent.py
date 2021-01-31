@@ -8,6 +8,55 @@ def bmd_is_independent(
     conditioning_set=[],
     threshold=0.99
 ):
+    """
+        This is a Bayesian Multinomial Dirichlet independence test. We assume
+        the data is multinomially distributed, while the priors are Dirichlet
+        distributed. The Dirichlet distribution is conjugate with the
+        multinomial distribution (i.e. a Dirichlet prior + Multinomial data =>
+        Dirichlet posterior).
+
+        For each strata of the conditioning set, we produce the posterior
+        distribution of the first variable. Likewise, we produce the posterior
+        distribution of the first variable, given the second variable and the
+        conditioning set. We then see if the difference is big enough. If at
+        least one difference is big enough, we consider the variables in vars_1
+        and vars_2 as dependent, given the conditioning set. Otherwise, we
+        consider them dependent.
+
+        Parameters:
+            data: pd.DataFrame
+                A dataframe that has the variables in vars_1, vars_2,
+                conditioning_set
+
+            vars_1: list['str']
+                We assume there's only one item.
+
+            vars_2: list['str']
+                We assume there's only one item.
+
+            conditioning_set: list['str']
+
+            threshold: float. Defaults to 0.99
+                This corresponds to the cutoff for deciding dependence vs.
+                independence. If one of the comparisons leads us to a higher
+                value than the threshold, then we say that vars_1 and vars_2
+                are dependent given the conditioning_set. Otherwise, we
+                consider the relationship as independent.
+
+        Returns: boolean
+            If the difference between at least one posterior vs. another is
+            greater than the threshold parameter, then we consider the two
+            distributions "dependent" and return False. Otherwise we return
+            True.
+
+        Since this is Bayesian, we get the benefit of Bayesian nalyses:
+
+        - easier interpretation of credible intervals (vs. Frequentist
+          confidence intervals)
+
+        - any sample size is valid for inference.
+
+    """
     var_1 = vars_1[0]
     var_2 = vars_2[0]
     _data = data.copy()
@@ -77,13 +126,15 @@ def bmd_is_independent(
 
 def posterior(data, variable, conditioning_set={}, size=1000):
     """
+        Samples the Dirichlet posterior distribution.
+
         Parameters:
             data: pd.DataFrame
             variable: name of the variable
             conditioning_set: dict
                 key: name of the variable
                 value: value of said variable
-
+            size: int. Defaults to 1,000
     """
 
     if conditioning_set == {}:
@@ -113,25 +164,9 @@ def posterior(data, variable, conditioning_set={}, size=1000):
 
     return np.random.dirichlet( tuple((bdeu_prior + data_count)), size=size)
 
-def is_dependent(p1, p2, proba_threshold, subt_cutoff=0.001, div_cutoff=1.5):
+def is_dependent(p1, p2, proba_threshold, subt_cutoff=0):
     acceptable_1 = (p1 - p2 > subt_cutoff).sum(axis=0) / p1.shape[0] >= proba_threshold
     acceptable_2 = (p2 - p1 > subt_cutoff).sum(axis=0) / p1.shape[0] >= proba_threshold
-
-    # import matplotlib.pyplot as plt
-
-    # fig = plt.figure(figsize=(10,10))
-    # ax_1 = fig.add_subplot(311)
-    # ax_2 = fig.add_subplot(312)
-    # ax_3 = fig.add_subplot(313)
-
-    # pd.DataFrame(p1).plot.hist(bins=100,alpha=0.5, ax=ax_1, xlim=(0,1))
-    # pd.DataFrame(p2).plot.hist(bins=100,alpha=0.5, ax=ax_2, xlim=(0,1))
-    # pd.DataFrame(p1 - p2).plot.hist(bins=100,alpha=0.5, ax=ax_3)
-    # plt.tight_layout()
-#
-    # fig.savefig('test2.png')
-
-    # import pdb; pdb.set_trace()
 
     return (acceptable_1 + acceptable_2).sum() > 0
 
