@@ -1,4 +1,3 @@
-from graphs.marked_pattern_graph import get_nodes_from_edges
 from constraint_based.misc import key_for_pair
 
 class ImmoralitiesFinder(object):
@@ -26,7 +25,7 @@ class ImmoralitiesFinder(object):
     def find(self):
         undirected_edges = self.marked_pattern_graph.get_undirected_edges()
         undirected_nodes = \
-            get_nodes_from_edges(undirected_edges)
+            self.marked_pattern_graph.get_nodes_of_edges(undirected_edges)
 
         unmarked_arrows = set({})
 
@@ -63,6 +62,8 @@ class ImmoralitiesFinder(object):
             key_for_pair(pair)
         ]
 
-        return get_nodes_from_edges(cond_sets)
+        return self\
+                .marked_pattern_graph\
+                .get_nodes_of_edges(cond_sets)
 
 
