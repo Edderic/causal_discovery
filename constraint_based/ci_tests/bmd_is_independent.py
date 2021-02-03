@@ -69,7 +69,7 @@ def bmd_is_independent(
         .groupby(var_2).count().index
 
     if conditioning_set == []:
-        p1 = posterior(
+        p1, _ = posterior(
             _data,
             variable=var_1
         )
@@ -78,11 +78,14 @@ def bmd_is_independent(
 
         for var_2_val in classes_for_var_2:
             cond_set_var_2[var_2] = var_2_val
-            p2 = posterior(
+            p2, num_rows_2 = posterior(
                 _data,
                 variable=var_1,
                 conditioning_set=cond_set_var_2
             )
+
+            if num_rows_2 == 0:
+                continue
 
             if is_dependent(p1, p2, threshold):
                 return False
@@ -101,23 +104,28 @@ def bmd_is_independent(
                 for cond_set_name, cond_val in zip(cond_set_names, cond_set_val):
                     cond_set_p1[cond_set_name] = cond_val
 
-            p1 = posterior(
+            p1, num_rows_1 = posterior(
                 _data,
                 variable=var_1,
                 conditioning_set=cond_set_p1
             )
+
+            if num_rows_1 == 0:
+                continue
 
             for var_2_val in classes_for_var_2:
                 # make a copy
                 cond_set_p2 = dict(cond_set_p1)
                 cond_set_p2[var_2] = var_2_val
 
-                p2 = posterior(
+                p2, num_rows_2 = posterior(
                     _data,
                     variable=var_1,
                     conditioning_set=cond_set_p2
-
                 )
+
+                if num_rows_2 == 0:
+                    continue
 
                 if is_dependent(p1, p2, threshold):
                     return False
@@ -141,10 +149,12 @@ def posterior(data, variable, conditioning_set={}, size=1000):
         _counts = data.groupby(variable).count()
         bdeu_prior = np.ones(_counts.shape[0]) / _counts.shape[0]
 
+        num_rows = _counts.shape[0]
+
         return np.random.dirichlet(
             tuple((bdeu_prior + _counts['tmp_count'])),
             size=size
-        )
+        ), num_rows
 
     data_copy = data.copy()
 
@@ -154,6 +164,7 @@ def posterior(data, variable, conditioning_set={}, size=1000):
         data_copy = data_copy[data_copy[key] == val]
 
     counts = data_copy.groupby(variable).count()
+    num_rows = counts.shape[0]
 
     bdeu_prior = np.ones(var_num_classes) / var_num_classes
 
@@ -162,7 +173,7 @@ def posterior(data, variable, conditioning_set={}, size=1000):
         counts=counts
     )
 
-    return np.random.dirichlet( tuple((bdeu_prior + data_count)), size=size)
+    return np.random.dirichlet( tuple((bdeu_prior + data_count)), size=size), num_rows
 
 def is_dependent(p1, p2, proba_threshold, subt_cutoff=0):
     acceptable_1 = (p1 - p2 > subt_cutoff).sum(axis=0) / p1.shape[0] >= proba_threshold
