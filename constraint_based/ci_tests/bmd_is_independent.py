@@ -132,7 +132,7 @@ def bmd_is_independent(
 
     return True
 
-def posterior(data, variable, conditioning_set={}, size=1000):
+def posterior(data, variable, conditioning_set={}, size=10000):
     """
         Samples the Dirichlet posterior distribution.
 
