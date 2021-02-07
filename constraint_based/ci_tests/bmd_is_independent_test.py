@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from .bmd_is_independent import bmd_is_independent, posterior
+from data import dog_example
 
 def test_uniform_multinomial_with_4_possible_values_size_10000(
     df_2_multinomial_indep_RVs
@@ -181,3 +182,68 @@ def test_spurious_edge_2(
 
     assert bmd_is_independent(**params) == False
 
+def test_dog_example():
+    df = dog_example(size=50000)
+
+    params = {
+       "data": df,
+       "vars_1": ['mentally_exhausted_before_bed'],
+       "vars_2": ['exercise_levels'],
+       "conditioning_set": []
+    }
+
+    bmd_is_independent(**params) == False
+
+    params = {
+       "data": df,
+       "vars_1": ['mentally_exhausted_before_bed'],
+       "vars_2": ['exercise_levels'],
+       "conditioning_set": ['activity']
+    }
+
+    bmd_is_independent(**params) == True
+
+    params = {
+       "data": df,
+       "vars_1": ['mentally_exhausted_before_bed'],
+       "vars_2": ['best_friends_visit'],
+       "conditioning_set": []
+    }
+
+    bmd_is_independent(**params) == False
+
+    params = {
+       "data": df,
+       "vars_1": ['mentally_exhausted_before_bed'],
+       "vars_2": ['weekend'],
+       "conditioning_set": []
+    }
+
+    bmd_is_independent(**params) == False
+
+    params = {
+       "data": df,
+       "vars_1": ['mentally_exhausted_before_bed'],
+       "vars_2": ['weekend'],
+       "conditioning_set": ['best_friends_visit', 'rain']
+    }
+
+    bmd_is_independent(**params) == True
+
+    params = {
+       "data": df,
+       "vars_1": ['mentally_exhausted_before_bed'],
+       "vars_2": ['weekend'],
+       "conditioning_set": ['best_friends_visit', 'activity']
+    }
+
+    bmd_is_independent(**params) == True
+
+    params = {
+       "data": df,
+       "vars_1": ['mentally_exhausted_before_bed'],
+       "vars_2": ['weekend'],
+       "conditioning_set": ['best_friends_visit']
+    }
+
+    bmd_is_independent(**params) == False
