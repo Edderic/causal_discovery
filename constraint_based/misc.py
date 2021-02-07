@@ -1,5 +1,6 @@
 import numpy as np
 from itertools import combinations
+import logging
 
 """
     Misc
@@ -131,4 +132,46 @@ def key_for_pair(var_names):
     _var_names = list(var_names)
     _var_names.sort()
     return _var_names[0] + ' _||_ ' + _var_names[1]
+
+def setup_logging():
+    logging.basicConfig(
+        format='%(asctime)s %(levelname)-8s %(message)s',
+        level=logging.INFO,
+        datefmt='%Y-%m-%d %H:%M:%S'
+    )
+
+    return logging
+
+class ConditioningSets(object):
+    """
+        An object that abstracts adding a conditioning set to an item
+    """
+    def __init__(self):
+        self.cond_sets_satisfying_cond_indep = {}
+
+    def add(
+        self,
+        node_1,
+        node_2,
+        cond_set
+    ):
+        if key_for_pair((node_1, node_2)) not in self.cond_sets_satisfying_cond_indep:
+            self.cond_sets_satisfying_cond_indep[
+                key_for_pair((node_1, node_2))
+            ] = set({})
+
+        self.cond_sets_satisfying_cond_indep[
+            key_for_pair((node_1, node_2))
+        ] = self.cond_sets_satisfying_cond_indep[
+            key_for_pair((node_1, node_2))
+        ].union(set({frozenset(cond_set)}))
+
+    def __str__(self):
+        return str(self.cond_sets_satisfying_cond_indep)
+
+    def __eq__(self, other):
+        return self.cond_sets_satisfying_cond_indep == other
+
+    def __getitem__(self, item):
+        return self.cond_sets_satisfying_cond_indep[item]
 
