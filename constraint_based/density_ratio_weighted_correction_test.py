@@ -30,8 +30,9 @@ def test_deterministic_cause_of_missingness():
         data=df,
         var_names=['x', 'y', 'z'],
         marked_pattern_graph=graph
-    )
+    ).correct()
 
+    # no errors thrown
     assert 1
 
 def test_missing_data_because_of_ses():
