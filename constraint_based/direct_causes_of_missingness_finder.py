@@ -1,5 +1,6 @@
 from constraint_based.ci_tests.bmd_is_independent import bmd_is_independent
-from constraint_based.misc import conditioning_sets_satisfying_conditional_independence
+from constraint_based.misc import conditioning_sets_satisfying_conditional_independence, setup_logging
+from itertools import combinations
 
 class DirectCausesOfMissingnessFinder(object):
     """
@@ -34,16 +35,13 @@ class DirectCausesOfMissingnessFinder(object):
                    vars_1: list[str]
                    vars_2: list[str]
                    conditioning_set: list[str]
-
-            indegree: int. Defaults to 8.
-                The number of nodes that can be associated to another node.
     """
     def __init__(
         self,
         data,
+        graph,
         missingness_indicator_prefix='MI_',
         is_conditionally_independent_func=bmd_is_independent,
-        indegree=8
     ):
         self.data = data.merge(
             data.isnull().add_prefix(missingness_indicator_prefix),
@@ -54,7 +52,7 @@ class DirectCausesOfMissingnessFinder(object):
         self.orig_data_cols = self.data.columns
         self.missingness_indicator_prefix = missingness_indicator_prefix
         self.is_conditionally_independent_func = is_conditionally_independent_func
-        self.indegree = indegree
+        self.graph = graph
 
     def find(self):
         """
@@ -65,30 +63,46 @@ class DirectCausesOfMissingnessFinder(object):
 
         marked_arrows = []
 
+        logging = setup_logging()
+
         for col_with_missingness in self._cols_with_missingness():
             missingness_col_name = self.missingness_indicator_prefix + col_with_missingness
+
+            logging.info('Finding direct parents of {}...'.format(missingness_col_name))
 
             for potential_parent in self._orig_vars():
                 # Assumption: no self-masking (i.e. A doesn't cause MI_A)
                 if potential_parent != col_with_missingness:
-                    cond_sets = conditioning_sets_satisfying_conditional_independence(
-                        data=self.data,
-                        var_name_1=missingness_col_name,
-                        var_name_2=potential_parent,
-                        is_conditionally_independent_func=self.is_conditionally_independent_func,
-                        possible_conditioning_set_vars=list(
-                            set(self.data.columns)\
-                            -set([
-                                    col_with_missingness,
-                                    missingness_col_name,
-                                    potential_parent
-                            ])
-                        ),
-                        indegree=self.indegree,
-                        only_find_one=True
-                    )
+                    neighbors = self.graph.get_neighbors(potential_parent)
 
-                    if len(cond_sets) == 0:
+                    if col_with_missingness in neighbors:
+                        col_with_miss_neighbors = self.graph.get_neighbors(col_with_missingness)
+
+                        potential_parent_neighbors = neighbors.union(col_with_miss_neighbors) - set({col_with_missingness, potential_parent})
+                    else:
+                        potential_parent_neighbors = neighbors
+
+                    depth = 0
+                    independent = False
+
+                    while depth <= len(potential_parent_neighbors):
+                        if independent:
+                            break
+
+                        for combo in combinations(potential_parent_neighbors, depth):
+                            if self.is_conditionally_independent_func(
+                                self.data,
+                                vars_1=[potential_parent],
+                                vars_2=[missingness_col_name],
+                                conditioning_set=list(combo)
+                            ):
+                                independent = True
+                                break
+                        depth += 1
+
+                    if not independent:
+                        logging.info('Found direct parents of {}: {}'.format(missingness_col_name, potential_parent))
+
                         marked_arrows.append(
                             (potential_parent, missingness_col_name)
                         )

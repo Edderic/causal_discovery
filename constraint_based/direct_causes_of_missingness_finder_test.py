@@ -15,8 +15,13 @@ def test_2_multinom_RVs_MCAR(
 
     df.at[missingness_indices[0], 'x'] = np.nan
 
+    graph = MarkedPatternGraph(
+        nodes=['x','y']
+    )
+
     direct_causes_of_missingness_finder = DirectCausesOfMissingnessFinder(
-        data=df
+        data=df,
+        graph=graph
     )
 
     marked_arrows = direct_causes_of_missingness_finder.find()
@@ -31,8 +36,13 @@ def test_2_multinom_RVs_MAR(
 
     df = df_X_Y_indep_Y_causes_MI_X(size=size)
 
+    graph = MarkedPatternGraph(
+        nodes=['x','y']
+    )
+
     direct_causes_of_missingness_finder = DirectCausesOfMissingnessFinder(
-        data=df
+        data=df,
+        graph=graph
     )
 
     marked_arrows = direct_causes_of_missingness_finder.find()
@@ -45,9 +55,13 @@ def test_3_multinom_RVs_MAR(
     size = 1000
 
     df = df_Z_causes_X_Y_and_X_Z_causes_MI_Y(size=size)
+    graph = MarkedPatternGraph(
+        nodes=['x','y','z']
+    )
 
     direct_causes_of_missingness_finder = DirectCausesOfMissingnessFinder(
-        data=df
+        data=df,
+        graph=graph
     )
 
     marked_arrows = direct_causes_of_missingness_finder.find()
@@ -60,8 +74,19 @@ def test_long_chains_collider_bias_without_MI(
 
     df = df_long_chains_and_collider_without_MI(size=size)
 
+    graph = MarkedPatternGraph(
+        nodes=df.columns,
+        undirected_edges=[
+            set({'a', 'b'}),
+            set({'b', 'c'}),
+            set({'c', 'd'}),
+            set({'d', 'e'}),
+        ]
+    )
+
     direct_causes_of_missingness_finder = DirectCausesOfMissingnessFinder(
-        data=df
+        data=df,
+        graph=graph
     )
 
     marked_arrows = direct_causes_of_missingness_finder.find()
@@ -77,8 +102,19 @@ def test_chain_and_collider_with_MI(
 
     df = df_chain_and_collider_with_MI(size=size)
 
+    graph = MarkedPatternGraph(
+        nodes=df.columns,
+        undirected_edges=[
+            set({'a', 'b'}),
+            set({'b', 'c'}),
+            set({'c', 'd'}),
+            set({'a', 'd'}),
+        ]
+    )
+
     direct_causes_of_missingness_finder = DirectCausesOfMissingnessFinder(
-        data=df
+        data=df,
+        graph=graph
     )
 
     marked_arrows = direct_causes_of_missingness_finder.find()
@@ -92,12 +128,23 @@ def test_chain_and_collider_with_MI(
 def test_long_chains_collider_bias_with_MI(
     df_long_chains_and_collider_with_MI
 ):
-    size = 1000
+    size = 10000
 
     df = df_long_chains_and_collider_with_MI(size=size)
 
+    graph = MarkedPatternGraph(
+        nodes=df.columns,
+        undirected_edges=[
+            set({'a', 'b'}),
+            set({'b', 'c'}),
+            set({'c', 'd'}),
+            set({'d', 'e'}),
+        ]
+    )
+
     direct_causes_of_missingness_finder = DirectCausesOfMissingnessFinder(
-        data=df
+        data=df,
+        graph=graph
     )
 
     marked_arrows = direct_causes_of_missingness_finder.find()
