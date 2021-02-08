@@ -1,6 +1,39 @@
 import pytest
 from graphs.marked_pattern_graph import MarkedPatternGraph
 
+def test_has_path_when_there_are_none():
+    graph = MarkedPatternGraph(
+        nodes=['x', 'y'],
+        marked_arrows=[],
+        undirected_edges=[],
+        unmarked_arrows=[],
+        bidirectional_edges=[]
+    )
+
+    assert graph.has_path(('x', 'y')) == False
+
+def test_has_path_when_there_is_one():
+    graph = MarkedPatternGraph(
+        nodes=['x', 'y'],
+        marked_arrows=[],
+        undirected_edges=[('x', 'y')],
+        unmarked_arrows=[],
+        bidirectional_edges=[]
+    )
+
+    assert graph.has_path(('x', 'y')) == True
+
+def test_has_path_when_there_is_a_longer_one():
+    graph = MarkedPatternGraph(
+        nodes=['x', 'y', 'z'],
+        marked_arrows=[],
+        undirected_edges=[('x', 'z')],
+        unmarked_arrows=[('z', 'y')],
+        bidirectional_edges=[]
+    )
+
+    assert graph.has_path(('x', 'y')) == True
+
 def test_equals_same():
     var_names = ['a', 'b', 'c', 'd', 'e']
 

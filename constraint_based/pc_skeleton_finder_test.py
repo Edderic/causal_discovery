@@ -13,7 +13,6 @@ def test_2_deterministic_and_3rd_var_caused_by_one_of_them(
 ):
     skeleton_finder = PCSkeletonFinder(
         data=df_2_deterministic_and_3rd_var_caused_by_one_of_them(size=1000),
-        var_names=['x', 'y', 'z'],
     )
 
     graph, cond_sets_satisfying_cond_indep = skeleton_finder.find()
@@ -24,7 +23,6 @@ def test_2_deterministic_and_3rd_var_caused_by_one_of_them(
 def test_2_multinom_RVs(df_2_multinomial_indep_RVs):
     skeleton_finder = PCSkeletonFinder(
         data=df_2_multinomial_indep_RVs(size=10000),
-        var_names=['x', 'y'],
     )
 
     graph, cond_sets_satisfying_cond_indep = skeleton_finder.find()
@@ -35,7 +33,6 @@ def test_2_multinom_RVs(df_2_multinomial_indep_RVs):
 def test_skeleton_finder_X_causes_Y(df_X_causes_Y):
     skeleton_finder = PCSkeletonFinder(
         data=df_X_causes_Y(size=1000),
-        var_names=['x', 'y'],
     )
 
     graph, cond_sets_satisfying_cond_indep = skeleton_finder.find()
@@ -44,16 +41,13 @@ def test_skeleton_finder_X_causes_Y(df_X_causes_Y):
     assert cond_sets_satisfying_cond_indep == {}
 
 def test_skeleton_finder_Z_causes_X_and_Y(df_Z_causes_X_and_Y):
-    var_names = ['x', 'y', 'z']
 
     skeleton_finder = PCSkeletonFinder(
         data=df_Z_causes_X_and_Y(size=1000),
-        var_names=var_names,
     )
 
     graph, cond_sets_satisfying_cond_indep = skeleton_finder.find()
 
-    assert graph.nodes == var_names
     assert graph.get_undirected_edges() == set({
         frozenset(('x', 'z')),
         frozenset(('y', 'z'))
@@ -68,8 +62,6 @@ def test_long_chains_collider_bias_without_MI(
     df = df_long_chains_and_collider_without_MI(size=size)
     skeleton_finder = PCSkeletonFinder(
         data=df,
-        var_names=df.columns,
-        only_find_one=True
     )
 
     graph, cond_sets_satisfying_cond_indep = skeleton_finder.find()
@@ -91,8 +83,6 @@ def test_long_chains_collider_bias_with_MI(
     df = df_long_chains_and_collider_with_MI(size=size, proba_noise=0.7)
     skeleton_finder = PCSkeletonFinder(
         data=df,
-        var_names=df.columns,
-        # only_find_one=True
     )
 
     graph, cond_sets_satisfying_cond_indep = skeleton_finder.find()
@@ -118,8 +108,6 @@ def test_chain_and_collider_without_MI(
     df = df_chain_and_collider_without_MI(size=size)
     skeleton_finder = PCSkeletonFinder(
         data=df,
-        var_names=df.columns,
-        only_find_one=True
     )
 
     graph, cond_sets_satisfying_cond_indep = skeleton_finder.find()
@@ -141,8 +129,6 @@ def test_chain_and_collider_with_MI(
     df = df_chain_and_collider_with_MI(size=size)
     skeleton_finder = PCSkeletonFinder(
         data=df,
-        var_names=df.columns,
-        only_find_one=True
     )
 
     graph, cond_sets_satisfying_cond_indep = skeleton_finder.find()
@@ -169,7 +155,6 @@ def test_3_multinom_RVs_MAR(
 
     skeleton_finder = PCSkeletonFinder(
         data=df,
-        var_names=df.columns,
     )
 
     graph, cond_sets_satisfying_cond_indep = \
@@ -207,7 +192,6 @@ def test_dog_pee():
 
     skeleton_finder = PCSkeletonFinder(
         data=df,
-        var_names=df.columns,
     )
 
     graph, cond_sets_satisfying_cond_indep = \
@@ -226,7 +210,6 @@ def test_dog_example():
 
     skeleton_finder = PCSkeletonFinder(
         data=df,
-        var_names=df.columns,
     )
 
     graph, cond_sets_satisfying_cond_indep = \

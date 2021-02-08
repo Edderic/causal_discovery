@@ -295,6 +295,34 @@ class MarkedPatternGraph(object):
 
         return self._is_node_certainly_a_descendant(node_1, node_2)
 
+    def has_path(self, node_tuple):
+        node_1, node_2 = self._instantiate_node_tuple(node_tuple)
+
+        visited = {}
+
+        return self._is_node_in_path(
+            node_to_find=node_2,
+            journey_node=node_1,
+            visited=visited
+        )
+
+    def _is_node_in_path(self, node_to_find, journey_node, visited):
+        for neighbor in list(self.get_neighbors(journey_node)):
+            if node_to_find == neighbor:
+                return True
+
+            if neighbor in visited:
+                continue
+
+            visited[neighbor] = True
+
+            return self._is_node_in_path(
+                node_to_find=node_to_find,
+                journey_node=neighbor,
+                visited=visited
+            )
+
+        return False
 
     def _is_node_certainly_a_descendant(self, node, possibly_a_descendant_node):
         children = list(self.dict[node][self.MARKED_ARROWHEAD])
