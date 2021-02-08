@@ -1,56 +1,6 @@
 from graphviz import Digraph
 import re
 
-"""
-    viz
-    ---
-
-    Visualization module.
-
-    Classes available:
-
-    - MarkedPatternGraph
-"""
-
-def get_nodes_from_edges(edges):
-    set_collection = frozenset({})
-    _edges = list(edges)
-
-    for edge in _edges:
-        set_collection = set_collection.union(frozenset(edge))
-
-    return set_collection
-
-def get_nodes_adj_to_node(edges, node):
-    collection = set({})
-    _edges = list(edges)
-
-    for edge in _edges:
-        if set(edge).intersection(set({node})) != set({}):
-            collection = collection.union(edge)
-
-    return collection - set({node})
-
-def get_common_adj_nodes_between_non_adj_nodes(edges, node_1, node_2):
-    nodes_adj_to_node_1 = get_nodes_adj_to_node(
-        edges=edges,
-        node=node_1
-    )
-
-    nodes_adj_to_node_2 = get_nodes_adj_to_node(
-        edges=edges,
-        node=node_2,
-    )
-
-    # if node_1 and node_2 are adjacent, exit early.
-    if set({node_1, node_2})\
-        .intersection(
-            nodes_adj_to_node_1.union(nodes_adj_to_node_2)
-        ) != set({}):
-        return []
-
-    return nodes_adj_to_node_1.intersection(nodes_adj_to_node_2)
-
 class MarkedPatternGraph(object):
     NO_ARROWHEAD = "-"
     UNMARKED_ARROWHEAD = "->"
@@ -385,6 +335,9 @@ class MarkedPatternGraph(object):
         """
         neighbors = set({})
 
+        if node not in self.dict:
+            return neighbors
+
         for arrowhead_type in self.ARROWHEAD_TYPES:
             neighbors = neighbors.union(self.dict[node][arrowhead_type])
 
@@ -411,8 +364,9 @@ class MarkedPatternGraph(object):
     def get_nodes(self):
         return set(self.dict.keys()).union(self.nodes)
 
-    def get_nodes_of_edges(self):
-        edges = list(self.get_edges())
+    def get_nodes_of_edges(self, edges=None):
+        if edges == None:
+            edges = list(self.get_edges())
 
         nodes = set({})
 

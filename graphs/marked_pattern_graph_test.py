@@ -1,6 +1,5 @@
 import pytest
 from graphs.marked_pattern_graph import MarkedPatternGraph
-from graphs.marked_pattern_graph import get_common_adj_nodes_between_non_adj_nodes
 
 def test_equals_same():
     var_names = ['a', 'b', 'c', 'd', 'e']
@@ -381,9 +380,3 @@ def test_simple():
         frozenset({'b', 'c'}),
         frozenset({'b', 'd'})
     })
-
-    assert get_common_adj_nodes_between_non_adj_nodes(
-        edges=graph.get_edges(),
-        node_1='a',
-        node_2='d'
-    ) == set({'b'})
