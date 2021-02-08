@@ -5,11 +5,12 @@ from constraint_based.misc import conditioning_sets_satisfying_conditional_indep
 import re
 
 class RemovableEdgesFinder(object):
+
+    # TODO: improve documentation
     """
         Parameters:
             data: pandas.DataFrame
             marked_pattern_graph: graphs.MarkedPatternGraph
-                TODO: do we really need this? What is this being used for?
             data_correction: class
                 Some class that responds to "correct" which should
                 simulated data that adjusts for missingness. "correct" invocation
@@ -28,7 +29,7 @@ class RemovableEdgesFinder(object):
         data_correction=DensityRatioWeightedCorrection,
         is_conditionally_independent_func=bmd_is_independent,
         potentially_extraneous_edges=[],
-        missingness_indicator_prefix='MI_',
+        missingness_indicator_prefix='MI_'
     ):
         self.data = data
         self.potentially_extraneous_edges = potentially_extraneous_edges
