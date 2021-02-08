@@ -2,6 +2,7 @@ from constraint_based.density_ratio_weighted_correction import DensityRatioWeigh
 from constraint_based.ci_tests.bmd_is_independent import bmd_is_independent
 from constraint_based.density_ratio_weighted_correction import DensityRatioWeightedCorrection
 from constraint_based.misc import conditioning_sets_satisfying_conditional_independence, key_for_pair
+from itertools import combinations
 import re
 
 class RemovableEdgesFinder(object):
@@ -26,7 +27,7 @@ class RemovableEdgesFinder(object):
         self,
         data,
         graph,
-        cond_sets_satisfying_cond_indep,
+        cond_sets,
         data_correction=DensityRatioWeightedCorrection,
         is_conditionally_independent_func=bmd_is_independent,
         potentially_extraneous_edges=[],
@@ -35,7 +36,7 @@ class RemovableEdgesFinder(object):
         self.data = data
         self.potentially_extraneous_edges = potentially_extraneous_edges
         self.graph = graph
-        self.cond_sets_satisfying_cond_indep = cond_sets_satisfying_cond_indep
+        self.cond_sets = cond_sets
         self.data_correction = data_correction
         self.is_conditionally_independent_func = is_conditionally_independent_func
         self.missingness_indicator_prefix = missingness_indicator_prefix
@@ -49,23 +50,50 @@ class RemovableEdgesFinder(object):
         for potentially_extraneous_edge in self.potentially_extraneous_edges:
             var_name_1, var_name_2 = tuple(potentially_extraneous_edge)
 
-            cond_sets = conditioning_sets_satisfying_conditional_independence(
-                self.data,
-                var_name_1,
-                var_name_2,
-                is_conditionally_independent_func=self.is_conditionally_independent_func,
-                possible_conditioning_set_vars=self._possible_conditioning_set_vars(
-                    var_name_1, var_name_2
-                ),
-                indegree=8,
-                only_find_one=True,
-                data_correction=self.data_correction,
-                marked_pattern_graph=self.marked_pattern_graph
-            )
+            var_1_neighbors = \
+                self.graph.get_neighbors(var_name_1) - set({var_name_1, var_name_2})
+            var_2_neighbors = \
+                self.graph.get_neighbors(var_name_2) - set({var_name_1, var_name_2})
 
-            if len(cond_sets) > 0:
-                self.cond_sets_satisfying_cond_indep[key_for_pair((var_name_1, var_name_2))] = cond_sets
-                extraneous_edges.append(potentially_extraneous_edge)
+            if len(var_1_neighbors) > len(var_2_neighbors):
+                nbrs = [var_2_neighbors, var_1_neighbors]
+            else:
+                nbrs = [var_1_neighbors, var_2_neighbors]
+
+            extraneous = False
+
+            for neighbors in nbrs:
+                depth = 0
+
+                if extraneous:
+                    break
+
+                while len(neighbors) > depth:
+                    if extraneous:
+                        break
+
+                    for cond_set in combinations(neighbors, depth):
+                        _data = self.data_correction(
+                            data=self.data,
+                            var_names=set(cond_set)\
+                                .union(set({var_name_1, var_name_2})),
+                            graph=self.graph
+                        ).correct()
+
+                        if self.is_conditionally_independent_func(
+                               data=_data,
+                               vars_1=[var_name_1],
+                               vars_2=[var_name_2],
+                               conditioning_set=list(cond_set),
+                           ):
+
+                           self.cond_sets.add(var_name_1, var_name_2, cond_set)
+
+                           extraneous_edges.append(potentially_extraneous_edge)
+                           extraneous = True
+                           break
+
+                    depth += 1
 
         return extraneous_edges
 
