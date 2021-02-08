@@ -115,12 +115,12 @@ class PCSkeletonFinder():
 
         logging = setup_logging()
 
+        nodes = self.graph.get_nodes()
+
         while self._depth_not_greater_than_num_adj_nodes_per_var(depth):
-            logging.info("Finding more independencies. Depth: {}".format(depth))
-
-            nodes = self.graph.get_nodes()
-
             for node_1, node_2 in combinations(nodes, 2):
+                logging.info("Finding more independencies. Depth: {}".format(depth))
+
                 node_1_neighbors = self.graph.get_neighbors(node_1)
                 node_2_neighbors = self.graph.get_neighbors(node_2)
 
@@ -144,9 +144,9 @@ class PCSkeletonFinder():
                         conditioning_set=list(conditionable)
                     ):
                         self.cond_sets.add(node_1, node_2, conditionable)
+                        break
 
             depth += 1
-
 
     def _init_complete_graph(self):
         return MarkedPatternGraph(
