@@ -22,7 +22,7 @@ class DensityRatioWeightedCorrection(object):
         self,
         data,
         var_names,
-        marked_pattern_graph,
+        graph,
         missingness_indicator_prefix='MI_'
    ):
         self.data = data.merge(
@@ -33,7 +33,7 @@ class DensityRatioWeightedCorrection(object):
 
         self.all_cols = data.columns
         self.var_names = var_names
-        self.marked_pattern_graph = marked_pattern_graph
+        self.graph = graph
         self.missingness_indicator_prefix = missingness_indicator_prefix
 
     def correct(self):
@@ -192,6 +192,7 @@ class DensityRatioWeightedCorrection(object):
 
         return [self.missingness_indicator_prefix + parent for parent in parents]
 
+    # TOOD: make more generic?
     def _marked_arrows(self):
-        return self.marked_pattern_graph.get_marked_arrows()
+        return self.graph.get_marked_arrows()
 

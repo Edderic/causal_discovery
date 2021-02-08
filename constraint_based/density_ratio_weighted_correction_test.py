@@ -29,7 +29,7 @@ def test_deterministic_cause_of_missingness():
     corrector = DensityRatioWeightedCorrection(
         data=df,
         var_names=['x', 'y', 'z'],
-        marked_pattern_graph=graph
+        graph=graph
     ).correct()
 
     # no errors thrown
@@ -76,7 +76,7 @@ def test_missing_data_because_of_ses():
     corrector = DensityRatioWeightedCorrection(
         data=df_with_missing_data,
         var_names=['ses', 'b', 'MI_b'],
-        marked_pattern_graph=graph
+        graph=graph
     )
 
     # reweight data before running statistics on it
@@ -127,7 +127,7 @@ def test_long_chains_collider_bias_with_MI(
     corrected_df = DensityRatioWeightedCorrection(
         data=df_long_chains_and_collider_with_MI(size=size),
         var_names=['b', 'd'],
-        marked_pattern_graph=graph
+        graph=graph
     ).correct()
 
     corrected_df['count'] = 0
