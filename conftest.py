@@ -240,6 +240,7 @@ def df_chain_and_collider_without_MI(multinomial_RV):
         return df
 
     yield _setup
+
 @pytest.fixture
 def df_chain_and_collider_with_MI(df_chain_and_collider_without_MI):
     #
