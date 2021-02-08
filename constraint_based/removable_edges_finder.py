@@ -10,7 +10,8 @@ class RemovableEdgesFinder(object):
     """
         Parameters:
             data: pandas.DataFrame
-            marked_pattern_graph: graphs.MarkedPatternGraph
+            graph: Graph
+                responds to ....
             data_correction: class
                 Some class that responds to "correct" which should
                 simulated data that adjusts for missingness. "correct" invocation
@@ -24,7 +25,7 @@ class RemovableEdgesFinder(object):
     def __init__(
         self,
         data,
-        marked_pattern_graph,
+        graph,
         cond_sets_satisfying_cond_indep,
         data_correction=DensityRatioWeightedCorrection,
         is_conditionally_independent_func=bmd_is_independent,
@@ -33,7 +34,7 @@ class RemovableEdgesFinder(object):
     ):
         self.data = data
         self.potentially_extraneous_edges = potentially_extraneous_edges
-        self.marked_pattern_graph = marked_pattern_graph
+        self.graph = graph
         self.cond_sets_satisfying_cond_indep = cond_sets_satisfying_cond_indep
         self.data_correction = data_correction
         self.is_conditionally_independent_func = is_conditionally_independent_func
@@ -69,7 +70,7 @@ class RemovableEdgesFinder(object):
         return extraneous_edges
 
     def _missingness_indicators(self):
-        nodes = list(self.marked_pattern_graph.get_nodes())
+        nodes = list(self.graph.get_nodes())
 
         mi = []
 
