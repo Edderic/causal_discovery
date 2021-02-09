@@ -5,7 +5,7 @@ from graphs.marked_pattern_graph import MarkedPatternGraph
 from tqdm import tqdm
 from constraint_based.misc import setup_logging, ConditioningSets, key_for_pair
 
-class FindMoreIndeps():
+class FindMoreCondIndeps():
     """
         Meant to be run after PCSkeletonFinder, as the latter might miss some
         independencies when conditional independence tests are

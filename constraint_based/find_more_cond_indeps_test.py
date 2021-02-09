@@ -1,6 +1,6 @@
 import pytest
 from constraint_based.pc_skeleton_finder import PCSkeletonFinder
-from constraint_based.find_more_cond_indeps import FindMoreIndeps
+from constraint_based.find_more_cond_indeps import FindMoreCondIndeps
 from data import dog_example
 
 def test_dog_example():
@@ -13,7 +13,7 @@ def test_dog_example():
     graph, cond_sets = \
         skeleton_finder.find()
 
-    FindMoreIndeps(
+    FindMoreCondIndeps(
         data=df,
         graph=graph,
         cond_sets=cond_sets
