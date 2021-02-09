@@ -1,7 +1,6 @@
 from constraint_based.ci_tests.bmd_is_independent import bmd_is_independent
 from constraint_based.ci_tests.sci_is_independent import sci_is_independent
 from itertools import combinations
-from constraint_based.misc import conditioning_sets_satisfying_conditional_independence, key_for_pair
 from graphs.marked_pattern_graph import MarkedPatternGraph
 from tqdm import tqdm
 from constraint_based.misc import setup_logging, ConditioningSets
@@ -9,38 +8,28 @@ from constraint_based.misc import setup_logging, ConditioningSets
 # TODO: rename since this is inspired
 class PCSkeletonFinder():
     """
-        Finds the set of undirected edges among nodes.
+        Finds the set of undirected edges among nodes, along with conditioning
+        sets that separate.
 
         Parameters:
-            var_names: [list[str]]
-                The names of variables that will be in the Skeleton. e.g.
-                ["Race", "Weight"]
-
             data [pandas.DataFrame]
-                Contains data. Each column is a variable. Each column name must
-                match one and only of the var_names.
+                Each column represents a variable.
+            cond_indep_test: function.
+                Defaults to bmd_is_independent
     """
     def __init__(
         self,
-        var_names,
         data,
-        is_conditionally_independent_func=bmd_is_independent,
-        missing_indicator_prefix='MI_',
-        only_find_one=False
+        cond_indep_test=bmd_is_independent,
     ):
-        self.var_names = var_names
-
         self.data = data
         self.orig_cols = list(data.columns)
-        self.is_conditionally_independent_func = is_conditionally_independent_func
-        self.missing_indicator_prefix = missing_indicator_prefix
-        self.only_find_one = only_find_one
+        self.cond_indep_test = cond_indep_test
 
     def find(self):
         """
-            Go through each pair of variables (in var_names).
-            For each pair, find a conditioning set that renders the two variables
-            independent.
+            For each pair of undirected edges, if possible, find a conditioning
+            set that renders the two variables independent.
 
             Returns:
                 marked_pattern: MarkedPatternGraph
@@ -61,17 +50,8 @@ class PCSkeletonFinder():
         """
         undirected_edges = []
         self.cond_sets = ConditioningSets()
-
         self.graph = self._init_complete_graph()
 
-        # make the graph as sparse as it can.
-        self._skeleton_find()
-        # update conditioning sets that we missed (to assist with helping find immoralities)
-        self._find_more_independencies()
-
-        return self.graph, self.cond_sets
-
-    def _skeleton_find(self):
         depth = 0
 
         logging = setup_logging()
@@ -93,7 +73,7 @@ class PCSkeletonFinder():
 
                     if len(conditionables) >= depth:
                         for combo in combinations(conditionables, depth):
-                            if self.is_conditionally_independent_func(
+                            if self.cond_indep_test(
                                 self.data,
                                 vars_1=[ordered_node_1],
                                 vars_2=[ordered_node_2],
@@ -110,43 +90,7 @@ class PCSkeletonFinder():
 
             depth += 1
 
-    def _find_more_independencies(self):
-        depth = 0
-
-        logging = setup_logging()
-
-        nodes = self.graph.get_nodes()
-
-        while self._depth_not_greater_than_num_adj_nodes_per_var(depth):
-            for node_1, node_2 in combinations(nodes, 2):
-                logging.info("Finding more independencies. Depth: {}".format(depth))
-
-                node_1_neighbors = self.graph.get_neighbors(node_1)
-                node_2_neighbors = self.graph.get_neighbors(node_2)
-
-                # if no neighbors, then there exists no path to node_2, so
-                # independent by default
-                if len(node_1_neighbors) == 0 or len(node_2_neighbors) == 0:
-                    continue
-
-                # if node_1 and node_2 are neighbors, then there is no
-                # conditioning set that separates them, so move on.
-                if node_1_neighbors.intersection(set({node_2})) == set({node_2}):
-                    continue
-
-                conditionables = list(node_1_neighbors.union(node_2_neighbors) - set({node_1, node_2}))
-
-                for conditionable in combinations(conditionables, depth):
-                    if self.is_conditionally_independent_func(
-                        self.data,
-                        vars_1=[node_1],
-                        vars_2=[node_2],
-                        conditioning_set=list(conditionable)
-                    ):
-                        self.cond_sets.add(node_1, node_2, conditionable)
-                        break
-
-            depth += 1
+        return self.graph, self.cond_sets
 
     def _init_complete_graph(self):
         return MarkedPatternGraph(
@@ -173,30 +117,3 @@ class PCSkeletonFinder():
                     return True
 
         return False
-
-    def _is_independent(self, var_name_1, var_name_2):
-        """
-            Goes through possible conditioning sets, including the empty set.
-        """
-
-        for cond_set_length in np.arange(len(self.var_names) - 1):
-            cond_set_combos = combinations(
-                    list(
-                        set(self.var_names) - set([var_name_1, var_name_2])
-                        ),
-                    cond_set_length
-                    )
-
-
-            for cond_set_combo in cond_set_combos:
-                if self.is_conditionally_independent_func(
-                        data=self.data,
-                        vars_1=[var_name_1],
-                        vars_2=[var_name_2],
-                        conditioning_set=list(cond_set_combo),
-                        ):
-
-                    return True
-
-        return False
-

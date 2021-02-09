@@ -219,9 +219,10 @@ def test_dog_example():
         key_for_pair(('activity', 'dog_tired'))
     ].intersection(set({frozenset({'exercise_levels'})})) == set({frozenset({'exercise_levels'})})
 
-    assert cond_sets_satisfying_cond_indep[ key_for_pair(('weekend', 'mentally_exhausted_before_bed')) ]\
-            .intersection(set({frozenset({'best_friends_visit', 'activity'})})) \
-        == set({frozenset({'best_friends_visit', 'activity'})})
+    assert set({frozenset({'best_friends_visit', 'activity'})}) not in \
+        cond_sets_satisfying_cond_indep[
+            key_for_pair(('weekend', 'mentally_exhausted_before_bed'))
+        ]
 
     assert graph.get_undirected_edges() == frozenset({
         frozenset(('rain', 'best_friends_visit')),

@@ -14,7 +14,7 @@ def conditioning_sets_satisfying_conditional_independence(
     data,
     var_name_1,
     var_name_2,
-    is_conditionally_independent_func,
+    cond_indep_test,
     possible_conditioning_set_vars=[],
     indegree=8,
     only_find_one=False,
@@ -35,7 +35,7 @@ def conditioning_sets_satisfying_conditional_independence(
             var_name_2: str
                 Represented by Y in X _||_ Y | Z.
 
-            is_conditionally_independent_func: function
+            cond_indep_test: function
                 This is the function that tests for conditional independendence.
 
                 Parameters:
@@ -111,7 +111,7 @@ def conditioning_sets_satisfying_conditional_independence(
             else:
                 _data = data
 
-            if is_conditionally_independent_func(
+            if cond_indep_test(
                    data=_data,
                    vars_1=[var_name_1],
                    vars_2=[var_name_2],
@@ -147,7 +147,7 @@ class ConditioningSets(object):
         An object that abstracts adding a conditioning set to an item
     """
     def __init__(self):
-        self.cond_sets_satisfying_cond_indep = {}
+        self.dict = {}
 
     def add(
         self,

@@ -1,5 +1,5 @@
 from constraint_based.ci_tests.bmd_is_independent import bmd_is_independent
-from constraint_based.misc import conditioning_sets_satisfying_conditional_independence, setup_logging
+from constraint_based.misc import setup_logging
 from itertools import combinations
 
 class DirectCausesOfMissingnessFinder(object):
@@ -27,7 +27,7 @@ class DirectCausesOfMissingnessFinder(object):
                 This is the string that gets prefixed to a column that has
                 missingness.
 
-            is_conditionally_independent_func: function.
+            cond_indep_test: function.
                 Defaults to bmd_is_independent.
 
                 Takes the following as parameters:
@@ -41,7 +41,7 @@ class DirectCausesOfMissingnessFinder(object):
         data,
         graph,
         missingness_indicator_prefix='MI_',
-        is_conditionally_independent_func=bmd_is_independent,
+        cond_indep_test=bmd_is_independent,
     ):
         self.data = data.merge(
             data.isnull().add_prefix(missingness_indicator_prefix),
@@ -51,7 +51,7 @@ class DirectCausesOfMissingnessFinder(object):
 
         self.orig_data_cols = self.data.columns
         self.missingness_indicator_prefix = missingness_indicator_prefix
-        self.is_conditionally_independent_func = is_conditionally_independent_func
+        self.cond_indep_test = cond_indep_test
         self.graph = graph
 
     def find(self):
@@ -90,7 +90,7 @@ class DirectCausesOfMissingnessFinder(object):
                             break
 
                         for combo in combinations(potential_parent_neighbors, depth):
-                            if self.is_conditionally_independent_func(
+                            if self.cond_indep_test(
                                 self.data,
                                 vars_1=[potential_parent],
                                 vars_2=[missingness_col_name],

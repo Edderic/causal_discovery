@@ -16,7 +16,7 @@ class RemovableEdgesFinder(object):
                 Some class that responds to "correct" which should
                 simulated data that adjusts for missingness. "correct" invocation
                 should return a pandas.DataFrame.
-            is_conditionally_independent_func: function.
+            cond_indep_test: function.
                 Defaults to constraint_based.ci_tests.bmd_is_independent
 
                 Some function that tells us whether or not sets of variables
@@ -28,7 +28,7 @@ class RemovableEdgesFinder(object):
         graph,
         cond_sets,
         data_correction=DensityRatioWeightedCorrection,
-        is_conditionally_independent_func=bmd_is_independent,
+        cond_indep_test=bmd_is_independent,
         potentially_extraneous_edges=[],
         missingness_indicator_prefix='MI_'
     ):
@@ -37,7 +37,7 @@ class RemovableEdgesFinder(object):
         self.graph = graph
         self.cond_sets = cond_sets
         self.data_correction = data_correction
-        self.is_conditionally_independent_func = is_conditionally_independent_func
+        self.cond_indep_test = cond_indep_test
         self.missingness_indicator_prefix = missingness_indicator_prefix
 
     def find(self):
@@ -79,7 +79,7 @@ class RemovableEdgesFinder(object):
                             graph=self.graph
                         ).correct()
 
-                        if self.is_conditionally_independent_func(
+                        if self.cond_indep_test(
                                data=_data,
                                vars_1=[var_name_1],
                                vars_2=[var_name_2],

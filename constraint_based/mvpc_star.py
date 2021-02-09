@@ -275,13 +275,13 @@ class MVPCStar(object):
     def __init__(
         self,
         data,
-        is_conditionally_independent_func=bmd_is_independent,
+        cond_indep_test=bmd_is_independent,
         missingness_indicator_prefix='MI_'
     ):
         self.data = data.copy()
         self.orig_columns = data.columns
         self.missingness_indicator_prefix = missingness_indicator_prefix
-        self.is_conditionally_independent_func=is_conditionally_independent_func
+        self.cond_indep_test=cond_indep_test
         # self.cond_set_num_vars_max=cond_set_num_vars_max
 
     def predict(self, debug=False):
@@ -294,7 +294,7 @@ class MVPCStar(object):
         skeleton_finder = PCSkeletonFinder(
             var_names=self.orig_columns,
             data=self.data,
-            is_conditionally_independent_func=self.is_conditionally_independent_func
+            cond_indep_test=self.cond_indep_test
         )
 
         graph, cond_sets_satisfying_cond_indep = skeleton_finder.find()
@@ -311,7 +311,7 @@ class MVPCStar(object):
             data=self.data,
             graph=graph,
             missingness_indicator_prefix=self.missingness_indicator_prefix,
-            is_conditionally_independent_func=self.is_conditionally_independent_func
+            cond_indep_test=self.cond_indep_test
         ).find()
 
         graph.add_marked_arrows(marked_arrows)
@@ -336,7 +336,7 @@ class MVPCStar(object):
             cond_sets=cond_sets_satisfying_cond_indep,
             graph=graph,
             missingness_indicator_prefix=self.missingness_indicator_prefix,
-            is_conditionally_independent_func=self.is_conditionally_independent_func
+            cond_indep_test=self.cond_indep_test
         ).find()
 
         graph.remove_undirected_edges(edges_to_remove)
