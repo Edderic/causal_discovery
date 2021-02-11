@@ -29,7 +29,6 @@ class ImmoralitiesFinder(object):
 
         unmarked_arrows = set({})
 
-
         for node_1 in undirected_nodes:
             for node_2 in undirected_nodes:
                 if node_1 == node_2:
