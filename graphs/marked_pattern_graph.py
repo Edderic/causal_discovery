@@ -504,14 +504,17 @@ class MarkedPatternGraph(object):
 
         return digraph
 
-    def missingness_indicators(self):
+    def get_observable_nodes(self):
+        return self.get_nodes() - self.get_missingness_indicators()
+
+    def get_missingness_indicators(self):
         mi = []
 
-        for from_node, to_node in self.marked_arrows:
-            if re.search(self.missingness_indicator_prefix, to_node) != None:
-                mi.append(to_node)
+        for node in self.get_nodes():
+            if re.search(self.missingness_indicator_prefix, node) != None:
+                mi.append(node)
 
-        return mi
+        return set(mi)
 
     def copy(self):
         return MarkedPatternGraph(
