@@ -73,6 +73,9 @@ class FindMoreCondIndeps():
                 neighbors = _neighbors - set({node_1, node_2})
 
                 for conditionable in combinations(neighbors, depth):
+                    # TODO: it's not just about having missing data; we care
+                    # about having missing data that is directly associated to
+                    # one of the variables
                     if has_missing_data and self._has_common_neighbor_not_immoral(
                         node_1,
                         node_2,
