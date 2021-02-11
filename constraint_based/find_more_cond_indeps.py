@@ -4,6 +4,7 @@ from itertools import combinations
 from graphs.marked_pattern_graph import MarkedPatternGraph
 from tqdm import tqdm
 from constraint_based.misc import setup_logging, ConditioningSets, key_for_pair
+from constraint_based.density_ratio_weighted_correction import DensityRatioWeightedCorrection
 
 class FindMoreCondIndeps():
     """
@@ -45,15 +46,18 @@ class FindMoreCondIndeps():
 
         logging = setup_logging()
 
-        nodes = self.graph.get_nodes()
+        nodes = self.graph.get_observable_nodes()
 
-        undirected_edges = self.graph.get_undirected_edges()
+        unmarked_arrows = self.graph.get_unmarked_arrows()
+        has_missing_data = self.data.isnull().sum().sum() > 0
 
         while self._depth_not_greater_than_num_adj_nodes_per_var(depth):
             visited = {}
-
             for node_1, node_2 in combinations(nodes, 2):
-                _neighbors = self.graph.get_neighbors(node_1).union(self.graph.get_neighbors(node_2))
+                node_1_neighbors = self.graph.get_neighbors(node_1)
+                node_2_neighbors = self.graph.get_neighbors(node_2)
+
+                _neighbors = node_1_neighbors.union(node_2_neighbors)
                 if key_for_pair((node_1, node_2)) in visited:
                     continue
 
@@ -69,8 +73,26 @@ class FindMoreCondIndeps():
                 neighbors = _neighbors - set({node_1, node_2})
 
                 for conditionable in combinations(neighbors, depth):
+                    if has_missing_data and self._has_common_neighbor_not_immoral(
+                        node_1,
+                        node_2,
+                        node_1_neighbors,
+                        node_2_neighbors,
+                        unmarked_arrows
+                    ):
+                        var_names = neighbors.union(set({node_1, node_2}))
+
+                        _data = DensityRatioWeightedCorrection(
+                            data=self.data,
+                            var_names=var_names,
+                            graph=self.graph,
+                            missingness_indicator_prefix='MI_'
+                        ).correct()
+                    else:
+                        _data = self.data
+
                     if self.cond_indep_test(
-                        self.data,
+                        _data,
                         vars_1=[node_1],
                         vars_2=[node_2],
                         conditioning_set=list(conditionable)
@@ -80,6 +102,28 @@ class FindMoreCondIndeps():
                 visited[key_for_pair((node_1, node_2))] = True
 
             depth += 1
+
+    def _has_common_neighbor_not_immoral(
+         self,
+         node_1,
+         node_2,
+         node_1_neighbors,
+         node_2_neighbors,
+         unmarked_arrows
+    ):
+        common_neighbors = node_1_neighbors.intersection(node_2_neighbors)
+
+        if len(common_neighbors) > 0:
+            _common_neighbors = list(common_neighbors)
+
+            for common_neighbor in _common_neighbors:
+                if not (
+                    unmarked_arrows.intersection(set({(node_1, common_neighbor)})) \
+                    and unmarked_arrows.intersection(set({(node_2, common_neighbor)}))
+                ):
+                    return True
+
+        return False
 
     def _depth_not_greater_than_num_adj_nodes_per_var(self, depth):
         undirected_edges = self.graph.get_undirected_edges()

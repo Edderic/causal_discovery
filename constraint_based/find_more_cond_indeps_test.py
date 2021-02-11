@@ -38,6 +38,6 @@ def test_dog_example():
         frozenset(('mentally_exhausted_before_bed', 'activity')),
         frozenset(('exercise_levels', 'dog_tired')),
         frozenset(('best_friends_visit', 'mentally_exhausted_before_bed')),
-        frozenset(('mentally_exhausted_before_bed', 'carry_dog_for_last_potty_before_bed')),
-        frozenset(('dog_tired', 'carry_dog_for_last_potty_before_bed')),
+        frozenset(('mentally_exhausted_before_bed', 'dog_teeth_brushed')),
+        frozenset(('dog_tired', 'dog_teeth_brushed')),
     })
