@@ -146,4 +146,3 @@ def test_long_chains_collider_bias_with_MI(
 
     assert corrected_df_counts.xs([1, True], level=['b', 'd']).values[0] \
             == approx(0.175, abs=0.02)
-

@@ -109,7 +109,8 @@ class DensityRatioWeightedCorrection(object):
 
             # the denominator has more columns, so we're doing the
             # multiplication in a weird way to take advantage of this fact.
-            running_probas = running_probas / (denominator / numerator)
+            running_probas = running_probas.dropna() / (denominator / numerator)
+
         return running_probas
 
     def _missingness_indicator_of_parents_of_missingness_indicator(self, mi):
