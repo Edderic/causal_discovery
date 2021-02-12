@@ -3,7 +3,6 @@
     MVPCStar: Missing Value PC Star
     -------------------------------
 """
-# from constraint_based.skeleton_finder import SkeletonFinder
 from constraint_based.pc_skeleton_finder import PCSkeletonFinder
 from constraint_based.ci_tests.bmd_is_independent import bmd_is_independent
 from constraint_based.direct_causes_of_missingness_finder import DirectCausesOfMissingnessFinder
@@ -292,17 +291,16 @@ class MVPCStar(object):
         logging.info('Finding skeleton...')
 
         skeleton_finder = PCSkeletonFinder(
-            var_names=self.orig_columns,
             data=self.data,
             cond_indep_test=self.cond_indep_test
         )
 
-        graph, cond_sets_satisfying_cond_indep = skeleton_finder.find()
+        graph, cond_sets = skeleton_finder.find()
 
         self.debug_info.append({
             'name': 'after skeleton finding',
             'graph': graph.copy(),
-            'cond_sets_satisfying_cond_indep': dict(cond_sets_satisfying_cond_indep.dict)
+            'cond_sets': dict(cond_sets.dict)
         })
 
         logging.info('Done finding skeleton. Now Finding direct causes of missingness...')
@@ -333,7 +331,7 @@ class MVPCStar(object):
             data=self.data,
             data_correction=DensityRatioWeightedCorrection,
             potentially_extraneous_edges=potentially_extraneous_edges,
-            cond_sets=cond_sets_satisfying_cond_indep,
+            cond_sets=cond_sets,
             graph=graph,
             missingness_indicator_prefix=self.missingness_indicator_prefix,
             cond_indep_test=self.cond_indep_test
@@ -344,14 +342,14 @@ class MVPCStar(object):
         self.debug_info.append({
             'name': 'after removing undirected edges',
             'graph': graph.copy(),
-            'cond_sets_satisfying_cond_indep': dict(cond_sets_satisfying_cond_indep.dict)
+            'cond_sets': dict(cond_sets.dict)
         })
 
         logging.info('Done removing extraneous edges. Now finding immoralities...')
 
         immoralities = ImmoralitiesFinder(
             marked_pattern_graph=graph,
-            cond_sets_satisfying_cond_indep=cond_sets_satisfying_cond_indep
+            cond_sets=cond_sets
         ).find()
 
         graph.add_arrowheads(immoralities)
