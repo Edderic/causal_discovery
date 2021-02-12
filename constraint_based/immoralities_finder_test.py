@@ -11,7 +11,7 @@ def test_simple_chain():
         ]
     )
 
-    cond_sets_satisfying_cond_indep = {
+    cond_sets = {
         'X _||_ Z': [ set({'Y'}) ],
         'X _||_ Y': [],
         'Y _||_ Z': [],
@@ -19,7 +19,7 @@ def test_simple_chain():
 
     unmarked_arrows = ImmoralitiesFinder(
         marked_pattern_graph=graph,
-        cond_sets_satisfying_cond_indep=cond_sets_satisfying_cond_indep
+        cond_sets=cond_sets
     ).find()
 
     assert set(unmarked_arrows) == set({})
@@ -33,13 +33,13 @@ def test_simple_collider():
         ]
     )
 
-    cond_sets_satisfying_cond_indep = {
+    cond_sets = {
         'Parent 1 _||_ Parent 2': [ set({}) ],
     }
 
     unmarked_arrows = ImmoralitiesFinder(
         marked_pattern_graph=graph,
-        cond_sets_satisfying_cond_indep=cond_sets_satisfying_cond_indep
+        cond_sets=cond_sets
     ).find()
 
     assert set(unmarked_arrows) == set(
@@ -67,7 +67,7 @@ def test_firing_squad_example():
         ]
     )
 
-    cond_sets_satisfying_cond_indep = {
+    cond_sets = {
         'Captain ordered to shoot _||_ Prisoner hit by bullet': [
             set({'Rifleman 1 shot'}),
             set({'Rifleman 2 shot'}),
@@ -80,7 +80,7 @@ def test_firing_squad_example():
 
     unmarked_arrows = ImmoralitiesFinder(
         marked_pattern_graph=graph,
-        cond_sets_satisfying_cond_indep=cond_sets_satisfying_cond_indep
+        cond_sets=cond_sets
     ).find()
 
     assert set(unmarked_arrows) == set(
