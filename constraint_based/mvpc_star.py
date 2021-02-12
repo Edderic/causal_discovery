@@ -282,7 +282,7 @@ class MVPCStar(object):
         self.orig_columns = data.columns
         self.missingness_indicator_prefix = missingness_indicator_prefix
         self.cond_indep_test=cond_indep_test
-        # self.cond_set_num_vars_max=cond_set_num_vars_max
+        # self.max_depth=max_depth
 
     def predict(self, debug=False):
         logging = setup_logging()

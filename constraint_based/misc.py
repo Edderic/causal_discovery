@@ -16,7 +16,7 @@ def conditioning_sets_satisfying_conditional_independence(
     var_name_2,
     cond_indep_test,
     possible_conditioning_set_vars=[],
-    indegree=8,
+    max_depth=8,
     only_find_one=False,
     data_correction=None,
     marked_pattern_graph=None
@@ -66,7 +66,7 @@ def conditioning_sets_satisfying_conditional_independence(
                 The list of variables that we could possibly condition on.
                 Represented by Z in X _||_ Y | Z.
 
-            indegree: int. >= 1
+            max_depth: int. >= 1
                 The maximum number of edges a node can have. This limits the search
 
             only_find_one: bool. Defaults to False.
@@ -80,7 +80,7 @@ def conditioning_sets_satisfying_conditional_independence(
         Returns: list if there's at least one. Otherwise, returns None
     """
 
-    assert indegree >= 1
+    assert max_depth >= 1
 
     assert len(
                set([var_name_1, var_name_2])\
@@ -88,8 +88,8 @@ def conditioning_sets_satisfying_conditional_independence(
                )
            ) == 0
 
-    if indegree < len(possible_conditioning_set_vars):
-        combo_length = indegree
+    if max_depth < len(possible_conditioning_set_vars):
+        combo_length = max_depth
     else:
         combo_length = len(possible_conditioning_set_vars)
 

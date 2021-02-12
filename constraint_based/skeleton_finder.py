@@ -21,7 +21,7 @@ class SkeletonFinder():
         var_names,
         data,
         cond_indep_test=bmd_is_independent,
-        cond_set_num_vars_max=8, # TODO: how do we know that this is the indegree?
+        max_depth=8,
         missing_indicator_prefix='MI_',
         only_find_one=False
     ):
@@ -30,7 +30,7 @@ class SkeletonFinder():
         self.data = data
         self.orig_cols = list(data.columns)
         self.cond_indep_test = cond_indep_test
-        self.cond_set_num_vars_max = cond_set_num_vars_max
+        self.max_depth = max_depth
         self.missing_indicator_prefix = missing_indicator_prefix
         self.only_find_one = only_find_one
 
@@ -69,9 +69,10 @@ class SkeletonFinder():
                 data=self.data,
                 var_name_1=var_name_1,
                 var_name_2=var_name_2,
-                is_conditionally_independent_func=self.is_conditionally_independent_func,
+                cond_indep_test=self.cond_indep_test,
                 possible_conditioning_set_vars=possible_conditioning_set_vars,
-                only_find_one=self.only_find_one
+                only_find_one=self.only_find_one,
+                max_depth=self.max_depth
             )
 
             if len(cond_sets) == 0:
