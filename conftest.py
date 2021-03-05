@@ -1,17 +1,28 @@
+"""
+    conftest.py
+
+    This is a file that holds fixtures.
+"""
+# pylint: disable=missing-function-docstring, redefined-outer-name
 import pytest
 import numpy as np
 import pandas as pd
+from graphs.marked_pattern_graph import MarkedPatternGraph
 
 @pytest.fixture
 def multinomial_RV():
     def _setup(
-        pvals=[0.25,
-            0.25,
-            0.25,
-            0.25
-        ],
+        pvals=None,
         size=10000
     ):
+        if pvals is None:
+            pvals = [
+                0.25,
+                0.25,
+                0.25,
+                0.25
+            ]
+
         multinomial = np.random.multinomial(
             n=1,
             pvals=pvals,
@@ -206,7 +217,7 @@ def df_long_chains_and_collider_with_MI(df_long_chains_and_collider_without_MI):
     yield _setup
 
 @pytest.fixture
-def df_chain_and_collider_without_MI(multinomial_RV):
+def df_chain_and_collider_without_MI():
     #
     #    A -> B -> C
     #     \       /
@@ -215,7 +226,7 @@ def df_chain_and_collider_without_MI(multinomial_RV):
     #        v v
     #         D
     #
-    def _setup(size=10000, proba_noise=0.8):
+    def _setup(size=10000):
         a = np.random.binomial(n=1, p=0.8, size=size)
         b_val = np.random.binomial(n=1, p=0.7, size=size)
 
@@ -283,3 +294,12 @@ def df_2_deterministic_and_3rd_var_caused_by_one_of_them():
         return pd.DataFrame({'x': x, 'y': y, 'z': z})
 
     yield _setup
+
+@pytest.fixture
+def simple_chain_graph():
+    #   X -> Y -> Z
+
+    return MarkedPatternGraph(
+        nodes=['X_t=1', 'X_t=2', 'X_t=3'],
+        undirected_edges=[('X_t=1', 'X_t=2'), ('X_t=2', 'X_t=3')]
+    )
