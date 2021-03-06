@@ -64,6 +64,23 @@ def test_init_complete_graph():
     assert graph.has_edge('C o-o B')
     assert graph.has_edge('A o-o C')
 
+def test_remove_edge():
+    graph = PartialAncestralGraph()
+
+    graph.add_edge('A o-o B')
+    assert graph.has_adjacency(('A', 'B')) is True
+
+    graph.remove_edge(('A', 'B'))
+    assert graph.has_adjacency(('A', 'B')) is False
+
+    graph = PartialAncestralGraph()
+
+    graph.add_edge('A <-o B')
+    assert graph.has_adjacency(('A', 'B')) is True
+
+    graph.remove_edge(('A', 'B'))
+    assert graph.has_adjacency(('A', 'B')) is False
+
 def test_ancestral_validation():
     # No directed cycles
 

@@ -167,6 +167,51 @@ class PartialAncestralGraph:
                         )
                     )
 
+    def remove_edge(self, nodes):
+        """
+            Removes the edge node_1 and node_2.
+
+            Parameters:
+                nodes: tuple[str]
+                    Ex: ('node_1', 'node_2')
+        """
+        node_1, node_2 = tuple(nodes)
+
+        for mark_1 in self.MARKS:
+            other_nodes = self.edges[node_1][mark_1]
+
+            if node_2 in other_nodes:
+
+                for mark_2 in self.MARKS:
+
+                    if node_1 in self.edges[node_2][mark_2]:
+
+                        self.edges[node_2][mark_2] = \
+                            self.edges[node_2][mark_2] - set({node_1})
+
+                        self.edges[node_1][mark_1] = \
+                            self.edges[node_1][mark_1] - set({node_2})
+
+    def has_adjacency(self, nodes):
+        """
+            Returns true if there is some sort of edge between
+            two nodes.
+
+            Parameters:
+                nodes: tuple
+        """
+        node_1, node_2 = tuple(nodes)
+
+        for mark_1 in self.MARKS:
+            other_nodes = self.edges[node_1][mark_1]
+
+            if node_2 in other_nodes:
+                for mark_2 in self.MARKS:
+                    if node_1 in self.edges[node_2][mark_2]:
+                        return True
+
+        return False
+
     def has_edge(self, string):
         """
             True if an edge exists in the graph.
