@@ -4,7 +4,7 @@ import pytest # pylint: disable=unused-import
 from graphs.partial_ancestral_graph import PartialAncestralGraph
 from errors import NotAncestralError
 
-def test_add_edge_o_dash_o():
+def test_add_edge():
     graph = PartialAncestralGraph()
 
     assert graph.has_edge('A o-o B') is False
@@ -53,6 +53,16 @@ def test_add_edge_o_dash_o():
     graph.add_edge('A <-> B')
     assert graph.has_edge('A <-> B') is True
     assert graph.has_edge('B <-> A') is True
+
+def test_init_complete_graph():
+    graph = PartialAncestralGraph(
+        complete=True,
+        variables=['A', 'B', 'C']
+    )
+
+    assert graph.has_edge('A o-o B')
+    assert graph.has_edge('C o-o B')
+    assert graph.has_edge('A o-o C')
 
 def test_ancestral_validation():
     # No directed cycles

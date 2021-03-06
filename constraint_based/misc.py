@@ -1,22 +1,24 @@
-import numpy as np
-from itertools import combinations
-import logging
-
 """
-    Misc
+    misc.py
 
     A library of miscellaneous functions.
 
     - conditioning_sets_satisfying_conditional_independence
 """
 
+from itertools import combinations
+import logging
+
+import numpy as np
+
+# pylint: disable=too-many-arguments
 def conditioning_sets_satisfying_conditional_independence(
     data,
     var_name_1,
     var_name_2,
     cond_indep_test,
-    possible_conditioning_set_vars=[],
     max_depth=8,
+    possible_conditioning_set_vars=None,
     only_find_one=False,
     data_correction=None,
     marked_pattern_graph=None
@@ -62,9 +64,11 @@ def conditioning_sets_satisfying_conditional_independence(
                 pandas.DataFrame that would hopefully be more representative of
                 the underlying distribution.
 
-            possible_conditioning_set_vars: list.
+            possible_conditioning_set_vars: list. Defaults to None.
                 The list of variables that we could possibly condition on.
                 Represented by Z in X _||_ Y | Z.
+
+                If None, it will be converted to an empty list.
 
             max_depth: int. >= 1
                 The maximum number of edges a node can have. This limits the search
@@ -79,6 +83,9 @@ def conditioning_sets_satisfying_conditional_independence(
 
         Returns: list if there's at least one. Otherwise, returns None
     """
+
+    if possible_conditioning_set_vars is None:
+        possible_conditioning_set_vars = []
 
     assert max_depth >= 1
 
@@ -102,7 +109,7 @@ def conditioning_sets_satisfying_conditional_independence(
         )
 
         for cond_set_combo in cond_set_combos:
-            if data_correction != None:
+            if data_correction is not None:
                 _data = data_correction(
                     data=data,
                     var_names=set(cond_set_combo)\
@@ -118,10 +125,10 @@ def conditioning_sets_satisfying_conditional_independence(
                    conditioning_set=list(cond_set_combo),
                ):
 
-               cond_set_combo_satisfies_cond_ind.append(set(cond_set_combo))
+                cond_set_combo_satisfies_cond_ind.append(set(cond_set_combo))
 
-               if only_find_one:
-                   return cond_set_combo_satisfies_cond_ind
+                if only_find_one:
+                    return cond_set_combo_satisfies_cond_ind
 
     return cond_set_combo_satisfies_cond_ind
 
@@ -134,6 +141,11 @@ def key_for_pair(var_names):
     return _var_names[0] + ' _||_ ' + _var_names[1]
 
 def setup_logging():
+    """
+        Sets up logging with time, levelname, and message.
+
+        Returns: logging
+    """
     logging.basicConfig(
         format='%(asctime)s %(levelname)-8s %(message)s',
         level=logging.INFO,
@@ -142,9 +154,11 @@ def setup_logging():
 
     return logging
 
-class ConditioningSets(object):
+class ConditioningSets:
     """
-        An object that abstracts adding a conditioning set to an item
+        An object that abstracts adding a conditioning set to an item. This is
+        meant to contain the separating sets that make two pairs of variables
+        independent.
     """
     def __init__(self):
         self.dict = {}
@@ -155,23 +169,43 @@ class ConditioningSets(object):
         node_2,
         cond_set
     ):
-        if key_for_pair((node_1, node_2)) not in self.cond_sets_satisfying_cond_indep:
-            self.cond_sets_satisfying_cond_indep[
+        """
+            Parameters:
+
+                node_1: str
+                node_2: str
+                cond_set: set
+        """
+        if key_for_pair((node_1, node_2)) not in self.dict:
+            self.dict[
                 key_for_pair((node_1, node_2))
             ] = set({})
 
-        self.cond_sets_satisfying_cond_indep[
+        self.dict[
             key_for_pair((node_1, node_2))
-        ] = self.cond_sets_satisfying_cond_indep[
+        ] = self.dict[
             key_for_pair((node_1, node_2))
         ].union(set({frozenset(cond_set)}))
 
+    def get(self, node_1, node_2):
+        """
+            Parameters:
+
+                node_1: str
+                node_2: str
+
+            Returns: set
+                The sets that separate node_1 and node_2.
+                Will raise a KeyError if a separating set for the pair node_1
+                and node_2 hasn't been added.
+        """
+        return self.dict[key_for_pair((node_1, node_2))]
+
     def __str__(self):
-        return str(self.cond_sets_satisfying_cond_indep)
+        return str(self.dict)
 
     def __eq__(self, other):
-        return self.cond_sets_satisfying_cond_indep == other
+        return self.dict == other
 
     def __getitem__(self, item):
-        return self.cond_sets_satisfying_cond_indep[item]
-
+        return self.dict[item]

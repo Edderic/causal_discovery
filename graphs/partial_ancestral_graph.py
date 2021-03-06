@@ -1,8 +1,12 @@
 """
+@pytest.mark.f
     PartialAncestralGraph
 """
 
+from itertools import combinations
+
 from errors import ArgumentError, NotAncestralError
+from constraint_based.misc import key_for_pair
 
 class PartialAncestralGraph:
     r"""
@@ -137,8 +141,31 @@ class PartialAncestralGraph:
         '{}-{}'.format(LEFT_ARROWHEAD, TAIL),
     ]
 
-    def __init__(self):
+    def __init__(self, variables=None, complete=False):
+        if variables is None:
+            self.variables = []
+        else:
+            self.variables = variables
+
         self.edges = {}
+
+        if complete is True:
+            assert len(self.variables) > 0
+
+            visited = []
+
+            for var_1, var_2 in combinations(self.variables, 2):
+                key = key_for_pair((var_1, var_2))
+
+                if key not in visited and var_1 != var_2:
+                    self.add_edge(
+                        '{} {}-{} {}'.format(
+                            var_1,
+                            self.UNCERTAIN,
+                            self.UNCERTAIN,
+                            var_2
+                        )
+                    )
 
     def has_edge(self, string):
         """
