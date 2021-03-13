@@ -71,6 +71,21 @@ def test_init_complete_graph():
     assert ('A', 'o-o', 'A') not in graph.get_edges()
     assert ('B', 'o-o', 'B') not in graph.get_edges()
 
+def test_init_complete_then_add_edge():
+    graph = PartialAncestralGraph(
+        complete=True,
+        variables=['A', 'B', 'C']
+    )
+    graph.add_edge('E o-> D')
+    assert graph.has_edge('E o-> D')
+    assert graph.has_edge('D <-o E')
+
+    assert graph.has_edge('A o-o B')
+    assert graph.has_edge('C o-o B')
+    assert graph.has_edge('A o-o C')
+
+    assert graph.has_edge('D o-o A') is False
+
 def test_remove_edge():
     graph = PartialAncestralGraph()
 
