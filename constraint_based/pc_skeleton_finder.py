@@ -1,11 +1,12 @@
-from constraint_based.ci_tests.bmd_is_independent import bmd_is_independent
-from constraint_based.ci_tests.sci_is_independent import sci_is_independent
+"""
+    PCSkeletonFinder
+"""
 from itertools import combinations
-from graphs.marked_pattern_graph import MarkedPatternGraph
-from tqdm import tqdm
+
+from constraint_based.ci_tests.bmd_is_independent import bmd_is_independent
 from constraint_based.misc import setup_logging, ConditioningSets
 
-# TODO: rename since this is inspired
+# pylint: disable=too-few-public-methods
 class PCSkeletonFinder():
     """
         Finds the set of undirected edges among nodes, along with conditioning
@@ -14,15 +15,22 @@ class PCSkeletonFinder():
         Parameters:
             data [pandas.DataFrame]
                 Each column represents a variable.
+            graph:
+                Something that responds to the following:
+                    - get_edges()
+                    - get_neighbors(node)
+                    - remove_edge((node_1, node_2))
             cond_indep_test: function.
                 Defaults to bmd_is_independent
     """
     def __init__(
         self,
         data,
+        graph,
         cond_indep_test=bmd_is_independent,
     ):
         self.data = data
+        self.graph = graph
         self.orig_cols = list(data.columns)
         self.cond_indep_test = cond_indep_test
 
@@ -48,20 +56,20 @@ class PCSkeletonFinder():
                         The conditioning sets that make X and Y conditionally
                         independent.
         """
-        undirected_edges = []
-        self.cond_sets = ConditioningSets()
-        self.graph = self._init_complete_graph()
+        cond_sets = ConditioningSets()
 
         depth = 0
 
         logging = setup_logging()
 
+        # pylint: disable=too-many-nested-blocks
         while self._depth_not_greater_than_num_adj_nodes_per_var(depth):
             logging.info("Finding skeleton. Depth: {}".format(depth))
 
-            for undirected_edge in self.graph.get_undirected_edges():
+            edges = self.graph.get_edges()
 
-                node_1, node_2 = tuple(undirected_edge)
+            for edge in edges:
+                node_1, _, node_2 = tuple(edge)
 
                 for ordered_edge in [(node_1, node_2), (node_2, node_1)]:
                     ordered_node_1, ordered_node_2 = ordered_edge
@@ -80,40 +88,30 @@ class PCSkeletonFinder():
                                 conditioning_set=list(combo)
                             ):
 
-                                self.graph.remove_undirected_edge(
+                                self.graph.remove_edge(
                                     (node_1, node_2)
                                 )
 
-                                self.cond_sets.add(node_1, node_2, combo)
+                                cond_sets.add(node_1, node_2, combo)
 
                                 break
 
             depth += 1
 
-        return self.graph, self.cond_sets
-
-    def _init_complete_graph(self):
-        return MarkedPatternGraph(
-            nodes=list(self.data.columns),
-            undirected_edges=list(combinations(self.orig_cols, 2))
-        )
+        return cond_sets
 
     def _depth_not_greater_than_num_adj_nodes_per_var(self, depth):
-        undirected_edges = self.graph.get_undirected_edges()
+        edges = list(self.graph.get_edges())
 
-        if len(undirected_edges) == 0:
+        if len(edges) == 0:
             return False
 
-        for undirected_edge in undirected_edges:
-            ordered_edge_1 = tuple(undirected_edge)
-            ordered_edge_2 = (ordered_edge_1[1], ordered_edge_1[0])
+        for edge in edges:
+            node_1, _, node_2 = tuple(edge)
+            len_1 = len(list(self.graph.get_neighbors(node_1) - set({node_2})))
+            len_2 = len(list(self.graph.get_neighbors(node_2) - set({node_1})))
 
-            for ordered_edge in [ordered_edge_1, ordered_edge_2]:
-                node_1, node_2 = tuple(ordered_edge)
-
-                node_1_neighbors_except_node_2 = list(self.graph.get_neighbors(node_1) - set({node_2}))
-
-                if len(node_1_neighbors_except_node_2) >= depth:
-                    return True
+            if len_1 >= depth or len_2 >= depth:
+                return True
 
         return False
