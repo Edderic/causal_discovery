@@ -68,6 +68,8 @@ def test_init_complete_graph():
     assert set({'B', 'C'}) == graph.get_neighbors('A')
 
     assert ('A', 'o-o', 'B') in graph.get_edges()
+    assert ('A', 'o-o', 'A') not in graph.get_edges()
+    assert ('B', 'o-o', 'B') not in graph.get_edges()
 
 def test_remove_edge():
     graph = PartialAncestralGraph()

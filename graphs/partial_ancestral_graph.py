@@ -233,6 +233,9 @@ class PartialAncestralGraph:
             self.adjacency_matrix.loc[:,all_cols] = \
                 '{}-{}'.format(self.UNCERTAIN, self.UNCERTAIN)
 
+            for variable in self.variables:
+                self.adjacency_matrix.loc[variable, variable] = np.nan
+
     def remove_edge(self, nodes):
         """
             Removes the edge node_1 and node_2.
