@@ -1,14 +1,21 @@
-from constraint_based.misc import key_for_pair
+"""
+    immoralities_finder
+"""
 
-class ImmoralitiesFinder(object):
+class ImmoralitiesFinder: #pylint: disable=too-few-public-methods
     """
         Finds immoralities. An immorality consists of two edges made up of
         three nodes. Two nodes are non-adjacent, and the third node is adjacent
         with the other two nodes.
 
         Parameters:
-            marked_pattern_graph: graphs.MarkedPatternGraph
-            cond_sets: dict
+            graph: a graph object
+                Responds to the following methods:
+                    - get_edges()
+                    - get_neighbors(node)
+                    - has_adjacency(tuple_of_nodes)
+
+            sep_sets: constraint_based.misc.sep_sets
                 key: str
                     Two variables that are conditionally independent.
                     Ex: "A _||_ B", which stands for A is independent of B
@@ -18,51 +25,55 @@ class ImmoralitiesFinder(object):
                     Ex: set({}) for the empty set
                     Ex: set({'C'})
     """
-    def __init__(self, marked_pattern_graph, cond_sets):
-        self.marked_pattern_graph = marked_pattern_graph
-        self.cond_sets = cond_sets
+    def __init__(self, graph, sep_sets):
+        self.graph = graph
+        self.sep_sets = sep_sets
 
     def find(self):
-        undirected_edges = self.marked_pattern_graph.get_undirected_edges()
-        undirected_nodes = \
-            self.marked_pattern_graph.get_nodes_of_edges(undirected_edges)
+        """
+            Finds immoralities (unshielded colliders).
 
-        unmarked_arrows = set({})
+            Returns: tuple
+                Ex: ('A', 'B', 'C'), where 'A' and 'C' are not
+                adjacent, and 'B' is not in any of the separating sets
+                between 'A' and 'C'
 
-        for node_1 in undirected_nodes:
-            for node_2 in undirected_nodes:
-                if node_1 == node_2:
-                    continue
+        Example:
+        >>> graph = PAG(
+        >>>     variables=['Parent 1', 'Parent 2', 'collider'],
+        >>> )
+        >>> graph.add_edge('Parent 1 o-o collider')
+        >>> graph.add_edge('Parent 2 o-o collider')
+        >>> sep_sets = SepSets()
+        >>> sep_sets.add(
+        >>>     node_1='Parent 1',
+        >>>     node_2='Parent_2',
+        >>>     cond_set=set({'collider'})
+        >>> )
+        >>> immoralities = ImmoralitiesFinder(
+        >>>     graph=graph,
+        >>>     sep_sets=sep_sets
+        >>> ).find()
+        >>> assert ('Parent 1', 'collider', 'Parent 2') in immoralities
+        """
+        edges = self.graph.get_edges()
+        immoralities = []
 
-                edges_for_getting_nodes_adj_to_node = undirected_edges
+        for edge in edges:
+            node_2_neighbors = list(self.graph.get_neighbors(edge.node_2) - set({edge.node_1}))
+            var_set = set({edge.node_2})
 
-                common_neighbors = \
-                    self.marked_pattern_graph.get_common_neighbors(
-                        node_1=node_1,
-                        node_2=node_2
-                    )
+            for node_2_neighbor in node_2_neighbors:
+                if not self.graph.has_adjacency(
+                        (edge.node_1, node_2_neighbor)
+                    ) \
+                    and not self.sep_sets.include(
+                        some_set=var_set,
+                        node_1=edge.node_1,
+                        node_2=node_2_neighbor
+                    ):
 
-                for common_adj_node in common_neighbors:
-                    try:
-                        if self.\
-                                _get_cond_set_vars_for_pair(
-                                    pair=[node_1, node_2]
-                                ).intersection(set({common_adj_node})) == set({}):
-                            unmarked_arrows = unmarked_arrows.union(set({(node_1, common_adj_node)}))
-                            unmarked_arrows = unmarked_arrows.union(set({(node_2, common_adj_node)}))
+                    immorality = (edge.node_1, edge.node_2, node_2_neighbor)
+                    immoralities.append(immorality)
 
-                    except KeyError:
-                        continue
-
-        return unmarked_arrows
-
-    def _get_cond_set_vars_for_pair(self, pair):
-        cond_sets = self.cond_sets[
-            key_for_pair(pair)
-        ]
-
-        return self\
-                .marked_pattern_graph\
-                .get_nodes_of_edges(cond_sets)
-
-
+        return immoralities
