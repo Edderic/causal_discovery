@@ -154,7 +154,7 @@ def setup_logging():
 
     return logging
 
-class ConditioningSets:
+class SepSets:
     """
         An object that abstracts adding a conditioning set to an item. This is
         meant to contain the separating sets that make two pairs of variables
