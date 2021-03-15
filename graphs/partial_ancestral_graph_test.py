@@ -1,8 +1,39 @@
 # pylint: disable=missing-module-docstring
 # pylint: disable=missing-function-docstring
 import pytest # pylint: disable=unused-import
-from graphs.partial_ancestral_graph import PartialAncestralGraph
+from graphs.partial_ancestral_graph import PartialAncestralGraph, Edge
 from errors import NotAncestralError
+
+def test_edge():
+    edge = Edge('A --> B')
+    assert not edge.into('A')
+    assert edge.out_of('A')
+    assert edge.into('B')
+    assert not edge.out_of('B')
+
+    edge = Edge('A <-> B')
+    assert not edge.out_of('A')
+    assert edge.into('A')
+    assert edge.into('B')
+    assert not edge.out_of('B')
+
+    edge = Edge('A o-> B')
+    assert not edge.out_of('A')
+    assert not edge.into('A')
+    assert edge.into('B')
+    assert not edge.out_of('B')
+
+def test_get_edge():
+    graph = PartialAncestralGraph()
+    assert graph.get_edge('A', 'B') is None
+
+    graph.add_edge('A o-o B')
+
+    result = graph.get_edge('A', 'B')
+
+    assert result[0] == 'A'
+    assert result[1] == 'o-o'
+    assert result[2] == 'B'
 
 def test_add_edge():
     graph = PartialAncestralGraph()

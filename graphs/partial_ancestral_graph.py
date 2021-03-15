@@ -62,6 +62,10 @@ class Edge(tuple):
 
         self.node_1 = node_1
         self.edge = edge
+
+        self.node_1_mark = self.edge[0]
+        self.node_2_mark = self.edge[2]
+
         self.node_2 = node_2
 
         self.string = string
@@ -69,6 +73,37 @@ class Edge(tuple):
     def __repr__(self):
         return "Edge({})".format(self.string)
 
+    def out_of(self, node):
+        """
+            If there is a tail next to a node, then return True, and
+            False otherwise.
+
+            Parameters:
+                node: str
+            Returns: bool
+        """
+        if node == self.node_1 and self.node_1_mark == PartialAncestralGraph.TAIL:
+            return True
+        if node == self.node_2 and self.node_2_mark == PartialAncestralGraph.TAIL:
+            return True
+        return False
+
+    def into(self, node):
+        """
+            If there is an arrowhead next to a node, then return True,
+            and False otherwise.
+
+            Parameters:
+                node: str
+            Returns: bool
+        """
+        if node == self.node_1 \
+            and self.node_1_mark == PartialAncestralGraph.LEFT_ARROWHEAD:
+            return True
+        if node == self.node_2 \
+            and self.node_2_mark == PartialAncestralGraph.RIGHT_ARROWHEAD:
+            return True
+        return False
 
 class PartialAncestralGraph:
     r"""
@@ -224,6 +259,7 @@ class PartialAncestralGraph:
 
         self.adjacency_matrix.loc[:, var_names_col] = deepcopy(self.variables)
         self.adjacency_matrix.set_index(var_names_col, inplace=True)
+        self.adjacency_matrix.loc[:,:] = np.nan
 
         if complete is True:
             assert len(self.variables) > 0
@@ -249,10 +285,26 @@ class PartialAncestralGraph:
         self.adjacency_matrix.loc[node_1, node_2] = np.nan
         self.adjacency_matrix.loc[node_2, node_1] = np.nan
 
+    def get_edge(self, node_1, node_2):
+        """
+            Returns the edge associated to the pair of nodes.
+
+            Parameters:
+                node_1: str
+                node_2: str
+
+            Returns: Edge or None
+        """
+
+        try:
+            edge = self.adjacency_matrix.loc[node_1, node_2]
+            return Edge('{} {} {}'.format(node_1, edge, node_2))
+        except KeyError:
+            return None
+
     def get_edges(self):
         """
-            Returns: set of froz
-                set of nodes
+            Returns: set of Edges
         """
         edges = []
 
@@ -268,7 +320,7 @@ class PartialAncestralGraph:
                     Edge('{} {} {}'.format(node, edge, other_node))
                 )
 
-        return edges
+        return set(edges)
 
     def get_neighbors(self, node):
         """
@@ -283,6 +335,13 @@ class PartialAncestralGraph:
         neighbors = set(list(edges[edges.notnull()].index))
 
         return neighbors - set({node})
+
+    def get_nodes(self):
+        """
+            Returns all the variables (may or may not be connected to other
+            nodes).
+        """
+        return set(self.variables)
 
     def has_adjacency(self, nodes):
         """
