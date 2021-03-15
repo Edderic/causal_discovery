@@ -61,17 +61,19 @@ class Edge(tuple):
         node_1, edge, node_2 = parse_nodes_edge(string)
 
         self.node_1 = node_1
-        self.edge = edge
 
-        self.node_1_mark = self.edge[0]
-        self.node_2_mark = self.edge[2]
+        self.node_1_mark = edge[0]
+        self.node_2_mark = edge[2]
 
         self.node_2 = node_2
 
-        self.string = string
-
     def __repr__(self):
-        return "Edge({})".format(self.string)
+        return "Edge({} {}-{} {})".format(
+            self.node_1,
+            self.node_1_mark,
+            self.node_2_mark,
+            self.node_2
+        )
 
     def out_of(self, node):
         """
@@ -81,7 +83,13 @@ class Edge(tuple):
             Parameters:
                 node: str
             Returns: bool
+
+            Raises:
+                ArgumentError if node not found.
         """
+        if node not in (self.node_1, self.node_2):
+            raise ArgumentError('Node {} not found'.format(node))
+
         if node == self.node_1 and self.node_1_mark == PartialAncestralGraph.TAIL:
             return True
         if node == self.node_2 and self.node_2_mark == PartialAncestralGraph.TAIL:
@@ -96,14 +104,63 @@ class Edge(tuple):
             Parameters:
                 node: str
             Returns: bool
+
+            Raises:
+                ArgumentError if node not found.
         """
+        if node not in (self.node_1, self.node_2):
+            raise ArgumentError('Node {} not found'.format(node))
+
         if node == self.node_1 \
             and self.node_1_mark == PartialAncestralGraph.LEFT_ARROWHEAD:
             return True
+
         if node == self.node_2 \
             and self.node_2_mark == PartialAncestralGraph.RIGHT_ARROWHEAD:
             return True
         return False
+
+    def set_into(self, node):
+        """
+            Add the appropriate arrowhead for the given node.
+
+            Parameters:
+                node: str
+
+            Raises:
+                ArgumentError if node not found.
+        """
+        if node not in (self.node_1, self.node_2):
+            raise ArgumentError('Node {} not found'.format(node))
+
+        if node == self.node_1:
+            self.node_1_mark = PartialAncestralGraph.LEFT_ARROWHEAD
+        else:
+            self.node_2_mark = PartialAncestralGraph.RIGHT_ARROWHEAD
+
+    def set_out_of(self, node):
+        """
+            Add a tail next to the given node.
+
+            Parameters:
+                node: str
+
+            Raises:
+                ArgumentError if node not found.
+        """
+        if node not in (self.node_1, self.node_2):
+            raise ArgumentError('Node {} not found'.format(node))
+
+        if node == self.node_1:
+            self.node_1_mark = PartialAncestralGraph.TAIL
+        else:
+            self.node_2_mark = PartialAncestralGraph.TAIL
+
+    def __eq__(self, other_edge):
+        return other_edge.node_1 == self.node_1 \
+            and other_edge.node_1_mark == self.node_1_mark \
+            and other_edge.node_2 == self.node_2 \
+            and other_edge.node_2_mark == self.node_2_mark
 
 class PartialAncestralGraph:
     r"""
@@ -320,7 +377,7 @@ class PartialAncestralGraph:
                     Edge('{} {} {}'.format(node, edge, other_node))
                 )
 
-        return set(edges)
+        return edges
 
     def get_neighbors(self, node):
         """

@@ -2,7 +2,27 @@
 # pylint: disable=missing-function-docstring
 import pytest # pylint: disable=unused-import
 from graphs.partial_ancestral_graph import PartialAncestralGraph, Edge
-from errors import NotAncestralError
+from errors import NotAncestralError, ArgumentError
+
+def test_edge_into_and_out_of():
+    edge = Edge('A o-o B')
+    edge.set_into('A')
+    assert edge == Edge('A <-o B')
+
+    with pytest.raises(ArgumentError):
+        edge.into('non-existent variable')
+
+    with pytest.raises(ArgumentError):
+        edge.out_of('non-existent variable')
+
+    edge.set_out_of('B')
+    assert edge == Edge('A <-- B')
+
+    with pytest.raises(ArgumentError):
+        edge.set_into('non-existent variable')
+
+    with pytest.raises(ArgumentError):
+        edge.set_out_of('non-existent variable')
 
 def test_edge():
     edge = Edge('A --> B')
@@ -98,9 +118,9 @@ def test_init_complete_graph():
     assert set({'A', 'C'}) == graph.get_neighbors('B')
     assert set({'B', 'C'}) == graph.get_neighbors('A')
 
-    assert ('A', 'o-o', 'B') in graph.get_edges()
-    assert ('A', 'o-o', 'A') not in graph.get_edges()
-    assert ('B', 'o-o', 'B') not in graph.get_edges()
+    assert Edge('A o-o B') in graph.get_edges()
+    assert Edge('A o-o A') not in graph.get_edges()
+    assert Edge('B o-o B') not in graph.get_edges()
 
 def test_init_complete_then_add_edge():
     graph = PartialAncestralGraph(
