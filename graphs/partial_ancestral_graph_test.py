@@ -4,6 +4,25 @@ import pytest # pylint: disable=unused-import
 from graphs.partial_ancestral_graph import PartialAncestralGraph, Edge
 from errors import NotAncestralError, ArgumentError
 
+def test_edge_undetermined_of():
+    edge = Edge('A o-o B')
+
+    assert edge.undetermined_of('A')
+    assert edge.undetermined_of('B')
+
+    with pytest.raises(ArgumentError):
+        edge.undetermined_of('non-existent variable')
+
+    edge = Edge('A o-> B')
+
+    assert edge.undetermined_of('A')
+    assert not edge.undetermined_of('B')
+
+    edge = Edge('A o-- B')
+
+    assert edge.undetermined_of('A')
+    assert not edge.undetermined_of('B')
+
 def test_edge_into_and_out_of():
     edge = Edge('A o-o B')
     edge.set_into('A')

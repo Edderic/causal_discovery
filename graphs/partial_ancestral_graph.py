@@ -68,12 +68,38 @@ class Edge(tuple):
         self.node_2 = node_2
 
     def __repr__(self):
-        return "Edge({} {}-{} {})".format(
+        return "Edge({} {} {})".format(
             self.node_1,
-            self.node_1_mark,
-            self.node_2_mark,
+            self.get_marks(),
             self.node_2
         )
+
+    def get_marks(self):
+        """
+            Ex: If we have edge "A o-> B", this will return "o->".
+        """
+        return "{}-{}".format(
+            self.node_1_mark,
+            self.node_2_mark,
+        )
+
+    def undetermined_of(self, node):
+        """
+            If the mark next to the node is an uncertain one, then return True.
+            Otherwise, return False.
+
+            Parameters:
+                node: str
+        """
+        if node not in (self.node_1, self.node_2):
+            raise ArgumentError('Node {} not found'.format(node))
+
+        if node == self.node_1 and self.node_1_mark == PartialAncestralGraph.UNCERTAIN:
+            return True
+        if node == self.node_2 and self.node_2_mark == PartialAncestralGraph.UNCERTAIN:
+            return True
+
+        return False
 
     def out_of(self, node):
         """
@@ -485,6 +511,16 @@ class PartialAncestralGraph:
                 "Nodes of undirected edges can have siblings."
             )
 
+    def set_edge(self, string):
+        """
+            Alias for add_edge.
+
+            Parameters:
+                string: str
+                    Ex: "Some Node A o-> Some Node B"
+        """
+        self.add_edge(string)
+
     def _has_nodes_of_undirected_edges_with_siblings(self):
         undirected_edges = self._get_undirected_edges()
 
@@ -603,9 +639,14 @@ class PartialAncestralGraph:
             edge
         )
 
-    def _get_nodes_and_marks(self, string):
+    def _get_nodes_and_marks(self, string_or_edge):
+        if isinstance(string_or_edge, Edge):
+            return string_or_edge.node_1, \
+                string_or_edge.get_marks(), \
+                string_or_edge.node_2
+
         for possible_edge in self.POSSIBLE_EDGES:
-            nodes_and_edge = string.split(possible_edge)
+            nodes_and_edge = string_or_edge.split(possible_edge)
 
             if len(nodes_and_edge) < 2:
                 continue
@@ -616,6 +657,6 @@ class PartialAncestralGraph:
             return node_1, possible_edge, node_2
 
         raise ArgumentError( \
-            "{} has an unrecognized edge. Possible edges: {}"\
-            .format(string, self.POSSIBLE_EDGES)
-        )
+                "{} has an unrecognized edge. Possible edges: {}"\
+                .format(string_or_edge, self.POSSIBLE_EDGES)
+                )
