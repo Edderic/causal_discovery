@@ -4,7 +4,7 @@
 from itertools import combinations
 
 from constraint_based.ci_tests.bmd_is_independent import bmd_is_independent
-from constraint_based.misc import setup_logging, ConditioningSets
+from constraint_based.misc import setup_logging, SepSets
 
 # pylint: disable=too-few-public-methods
 class PCSkeletonFinder():
@@ -56,7 +56,7 @@ class PCSkeletonFinder():
                         The conditioning sets that make X and Y conditionally
                         independent.
         """
-        cond_sets = ConditioningSets()
+        cond_sets = SepSets()
 
         depth = 0
 
@@ -75,7 +75,7 @@ class PCSkeletonFinder():
                     ordered_node_1, ordered_node_2 = ordered_edge
 
                     conditionables = list(
-                            self.graph.get_neighbors(ordered_node_1)\
+                            {str(i) for i in self.graph.get_neighbors(ordered_node_1)}\
                              - set({ordered_node_2})
                     )
 
@@ -108,8 +108,8 @@ class PCSkeletonFinder():
 
         for edge in edges:
             node_1, _, node_2 = tuple(edge)
-            len_1 = len(list(self.graph.get_neighbors(node_1) - set({node_2})))
-            len_2 = len(list(self.graph.get_neighbors(node_2) - set({node_1})))
+            len_1 = len({str(i) for i in self.graph.get_neighbors(node_1)} - set({node_2}))
+            len_2 = len({str(i) for i in self.graph.get_neighbors(node_2)} - set({node_1}))
 
             if len_1 >= depth or len_2 >= depth:
                 return True

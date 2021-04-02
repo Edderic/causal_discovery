@@ -30,6 +30,7 @@ def test_2_multinom_RVs(df_2_multinomial_indep_RVs):
     df = df_2_multinomial_indep_RVs(size=10000)
     graph = Graph(
         variables=list(df.columns),
+
         complete=True
     )
 
@@ -40,7 +41,7 @@ def test_2_multinom_RVs(df_2_multinomial_indep_RVs):
 
     cond_sets_satisfying_cond_indep = skeleton_finder.find()
 
-    assert graph.get_edges() == set({})
+    assert graph.get_edges() == []
     assert cond_sets_satisfying_cond_indep['x _||_ y'] == set({frozenset({})})
 
 def test_skeleton_finder_X_causes_Y(df_X_causes_Y):
