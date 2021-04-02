@@ -3,11 +3,8 @@
     PartialAncestralGraph
 """
 
-from copy import deepcopy
+from itertools import combinations
 import re
-
-import pandas as pd
-import numpy as np
 
 from errors import ArgumentError, NotAncestralError, EdgeTypeNotFound
 
@@ -28,7 +25,8 @@ def parse_nodes_edge(string, possible_edge_list=None):
             PartialAncestralGraph.POSSIBLE_EDGES
 
     for possible_edge in possible_edge_list:
-        nodes_and_edge = string.split(possible_edge)
+        _string = str(string)
+        nodes_and_edge = _string.split(possible_edge)
 
         if len(nodes_and_edge) < 2:
             continue
@@ -60,19 +58,42 @@ class Edge(tuple):
         super().__init__()
         node_1, edge, node_2 = parse_nodes_edge(string)
 
-        self.node_1 = node_1
+        self.node_1 = nodeify(node_1)
 
         self.node_1_mark = edge[0]
         self.node_2_mark = edge[2]
 
-        self.node_2 = node_2
+        self.node_1_mark_converted = convert_arrowhead(self.node_1_mark)
+        self.node_2_mark_converted = convert_arrowhead(self.node_2_mark)
+
+        self.node_2 = nodeify(node_2)
 
     def __repr__(self):
-        return "Edge({} {} {})".format(
+        return "{} {} {}".format(
             self.node_1,
             self.get_marks(),
             self.node_2
         )
+
+    def get_node_other_than(self, other_node):
+        """
+            Parameters:
+                other_node: str
+
+            Returns: str
+        """
+        other = nodeify(other_node)
+
+        if other not in (self.node_1, self.node_2):
+            raise ArgumentError(
+                "{} not applicable. Doesn't match {} or {}"\
+                .format(other, self.node_1, self.node_2)
+            )
+
+        if self.node_1 == other:
+            return self.node_2
+
+        return self.node_1
 
     def get_marks(self):
         """
@@ -83,6 +104,26 @@ class Edge(tuple):
             self.node_2_mark,
         )
 
+    def is_undirected(self):
+        """
+            If the edge has tails for both of its marks, then return True, and
+            return False otherwise.
+
+            Returns: bool
+        """
+        return self.node_1_mark_converted == PartialAncestralGraph.TAIL \
+            and self.node_2_mark_converted == PartialAncestralGraph.TAIL
+
+    def is_bidirected(self):
+        """
+            If the edge has an arrowhead at both of its sides, then return
+            True, and return False otherwise.
+
+            Returns: bool
+        """
+        return self.node_1_mark_converted == PartialAncestralGraph.ARROWHEAD \
+            and self.node_2_mark_converted == PartialAncestralGraph.ARROWHEAD
+
     def undetermined_of(self, node):
         """
             If the mark next to the node is an uncertain one, then return True.
@@ -91,12 +132,14 @@ class Edge(tuple):
             Parameters:
                 node: str
         """
-        if node not in (self.node_1, self.node_2):
-            raise ArgumentError('Node {} not found'.format(node))
+        _node = nodeify(node)
 
-        if node == self.node_1 and self.node_1_mark == PartialAncestralGraph.UNCERTAIN:
+        if _node not in (self.node_1, self.node_2):
+            raise ArgumentError('Node {} not found'.format(_node))
+
+        if _node == self.node_1 and self.node_1_mark == PartialAncestralGraph.UNCERTAIN:
             return True
-        if node == self.node_2 and self.node_2_mark == PartialAncestralGraph.UNCERTAIN:
+        if _node == self.node_2 and self.node_2_mark == PartialAncestralGraph.UNCERTAIN:
             return True
 
         return False
@@ -113,12 +156,14 @@ class Edge(tuple):
             Raises:
                 ArgumentError if node not found.
         """
-        if node not in (self.node_1, self.node_2):
-            raise ArgumentError('Node {} not found'.format(node))
+        _node = nodeify(node)
 
-        if node == self.node_1 and self.node_1_mark == PartialAncestralGraph.TAIL:
+        if _node not in (self.node_1, self.node_2):
+            raise ArgumentError('Node {} not found'.format(_node))
+
+        if _node == self.node_1 and self.node_1_mark == PartialAncestralGraph.TAIL:
             return True
-        if node == self.node_2 and self.node_2_mark == PartialAncestralGraph.TAIL:
+        if _node == self.node_2 and self.node_2_mark == PartialAncestralGraph.TAIL:
             return True
         return False
 
@@ -134,15 +179,17 @@ class Edge(tuple):
             Raises:
                 ArgumentError if node not found.
         """
-        if node not in (self.node_1, self.node_2):
-            raise ArgumentError('Node {} not found'.format(node))
+        _node = nodeify(node)
 
-        if node == self.node_1 \
-            and self.node_1_mark == PartialAncestralGraph.LEFT_ARROWHEAD:
+        # if _node not in (self.node_1, self.node_2):
+            # raise ArgumentError('Node {} not found'.format(_node))
+
+        if _node == self.node_1 \
+            and self.node_1_mark_converted == PartialAncestralGraph.ARROWHEAD:
             return True
 
-        if node == self.node_2 \
-            and self.node_2_mark == PartialAncestralGraph.RIGHT_ARROWHEAD:
+        if _node == self.node_2 \
+            and self.node_2_mark_converted == PartialAncestralGraph.ARROWHEAD:
             return True
         return False
 
@@ -156,13 +203,17 @@ class Edge(tuple):
             Raises:
                 ArgumentError if node not found.
         """
-        if node not in (self.node_1, self.node_2):
-            raise ArgumentError('Node {} not found'.format(node))
+        _node = nodeify(node)
 
-        if node == self.node_1:
+        if _node not in (self.node_1, self.node_2):
+            raise ArgumentError('Node {} not found'.format(_node))
+
+        if _node == self.node_1:
             self.node_1_mark = PartialAncestralGraph.LEFT_ARROWHEAD
+            self.node_1_mark_converted = PartialAncestralGraph.ARROWHEAD
         else:
             self.node_2_mark = PartialAncestralGraph.RIGHT_ARROWHEAD
+            self.node_2_mark_converted = PartialAncestralGraph.ARROWHEAD
 
     def set_out_of(self, node):
         """
@@ -174,19 +225,126 @@ class Edge(tuple):
             Raises:
                 ArgumentError if node not found.
         """
-        if node not in (self.node_1, self.node_2):
-            raise ArgumentError('Node {} not found'.format(node))
+        _node = nodeify(node)
 
-        if node == self.node_1:
+        if _node not in (self.node_1, self.node_2):
+            raise ArgumentError('Node {} not found'.format(_node))
+
+        if _node == self.node_1:
             self.node_1_mark = PartialAncestralGraph.TAIL
+            self.node_1_mark_converted = PartialAncestralGraph.TAIL
         else:
             self.node_2_mark = PartialAncestralGraph.TAIL
+            self.node_2_mark_converted = PartialAncestralGraph.TAIL
 
     def __eq__(self, other_edge):
-        return other_edge.node_1 == self.node_1 \
-            and other_edge.node_1_mark == self.node_1_mark \
+        return (
+            other_edge.node_1 == self.node_1 \
+            and other_edge.node_1_mark_converted == self.node_1_mark_converted \
             and other_edge.node_2 == self.node_2 \
-            and other_edge.node_2_mark == self.node_2_mark
+            and convert_arrowhead(other_edge.node_2_mark) == convert_arrowhead(self.node_2_mark)
+        ) or (
+            other_edge.node_2 == self.node_1 \
+            and other_edge.node_2_mark_converted == self.node_1_mark_converted \
+            and other_edge.node_1 == self.node_2 \
+            and other_edge.node_1_mark_converted == self.node_2_mark_converted
+        )
+
+def convert_arrowhead(string):
+    """
+        Convert a LEFT_ARROWHEAD or RIGHT_ARROWHEAD to an ARROWHEAD
+    """
+    return re.sub(
+        f"[{PartialAncestralGraph.LEFT_ARROWHEAD}]|[{PartialAncestralGraph.RIGHT_ARROWHEAD}]",
+        PartialAncestralGraph.ARROWHEAD,
+        string
+    )
+
+def nodeify(other_node):
+    """
+        Ensure that we get a Node instance
+    """
+    if isinstance(other_node, Node):
+        return other_node
+    if isinstance(other_node, str):
+        return Node(other_node)
+    return None
+
+class Node:
+    """
+        A node. Might or might not have edges.
+    """
+    def __init__(self, variable):
+        self.variable = variable
+        self.edges = {}
+
+    def __eq__(self, other_node):
+        return self.variable == nodeify(other_node).variable
+
+
+    def add_edge(self, edge):
+        """
+            Parameters:
+                edge: Edge
+        """
+        self.edges[str(edge.get_node_other_than(self.variable))] = edge
+
+    def remove_edge(self, edge_or_node):
+        """
+            Parameters:
+                edge: Edge or Node
+        """
+        if isinstance(edge_or_node, Edge):
+            self.edges.pop(str(edge_or_node.get_node_other_than(self.variable)), None)
+        elif isinstance(edge_or_node, Node):
+            self.edges.pop(str(edge_or_node), None)
+
+    def get_edge(self, node):
+        """
+            Parameters:
+                edge: Edge
+        """
+
+        return self.edges[str(node)]
+
+    def get_edges(self):
+        """
+            Returns: list of Edge
+        """
+        edges = []
+
+        for other_var in self.edges:
+            edges.append(self.edges[other_var])
+
+        return edges
+
+    def get_neighbors(self):
+        """
+            Returns: list of str
+        """
+
+        return map(nodeify, list(self.edges.keys()))
+
+    def get_children(self):
+        """
+            Returns: list[Node]
+        """
+        children = []
+
+        for adjacent_node, edge in self.edges.items():
+            if edge.out_of(self) and edge.into(adjacent_node):
+                children.append(Node(adjacent_node))
+
+        return children
+
+    def is_adjacent(self, node):
+        """
+            Returns: bool
+        """
+        return str(node) in self.edges.keys()
+
+    def __repr__(self):
+        return f"{self.variable}"
 
 class PartialAncestralGraph:
     r"""
@@ -323,37 +481,27 @@ class PartialAncestralGraph:
 
     def __init__(self, variables=None, complete=False):
         if variables is None:
-            self.variables = []
-        else:
-            self.variables = variables
+            variables = []
 
-        self._init_graph(complete)
+        self.variables = {}
 
+        for variable in variables:
+            self.variables[variable] = Node(variable)
 
-    def _init_graph(self, complete):
-        num_vars = len(self.variables)
+        if complete:
+            self._init_complete_graph()
 
-        self.adjacency_matrix = pd.DataFrame(
-            np.zeros((num_vars, num_vars)),
-            columns=self.variables
-        )
+    def __repr__(self):
+        return f"Variables: {self.variables}\nEdges: {self.get_edges()}"
 
-        var_names_col = '|var_names|'
+    def _init_complete_graph(self):
+        assert len(self.variables) > 0
 
-        self.adjacency_matrix.loc[:, var_names_col] = deepcopy(self.variables)
-        self.adjacency_matrix.set_index(var_names_col, inplace=True)
-        self.adjacency_matrix.loc[:,:] = np.nan
+        for var_1_str, var_2_str in combinations(self.variables.keys(), 2):
+            var_1 = self.variables[var_1_str]
+            var_2 = self.variables[var_2_str]
 
-        if complete is True:
-            assert len(self.variables) > 0
-            all_cols = list(set(self.adjacency_matrix.columns) \
-                - set({var_names_col}))
-
-            self.adjacency_matrix.loc[:,all_cols] = \
-                '{}-{}'.format(self.UNCERTAIN, self.UNCERTAIN)
-
-            for variable in self.variables:
-                self.adjacency_matrix.loc[variable, variable] = np.nan
+            self.add_edge(Edge(f"{var_1} o-o {var_2}"))
 
     def remove_edge(self, nodes):
         """
@@ -363,10 +511,11 @@ class PartialAncestralGraph:
                 nodes: tuple[str]
                     Ex: ('node_1', 'node_2')
         """
-        node_1, node_2 = tuple(nodes)
+        variable_1 = self.variables[str(nodes[0])]
+        variable_2 = self.variables[str(nodes[1])]
 
-        self.adjacency_matrix.loc[node_1, node_2] = np.nan
-        self.adjacency_matrix.loc[node_2, node_1] = np.nan
+        variable_1.remove_edge(variable_2)
+        variable_2.remove_edge(variable_1)
 
     def get_edge(self, node_1, node_2):
         """
@@ -380,28 +529,47 @@ class PartialAncestralGraph:
         """
 
         try:
-            edge = self.adjacency_matrix.loc[node_1, node_2]
-            return Edge('{} {} {}'.format(node_1, edge, node_2))
+            _node_1 = self.variables[str(node_1)]
+
+            return _node_1.get_edge(node_2)
         except KeyError:
             return None
 
+    def get_adjacent_pairs_of_edges(self):
+        """
+            Returns: tuple
+        """
+
+        pairs = []
+
+        for _, middle_node in self.variables.items():
+            neighbors = list(middle_node.get_neighbors())
+            if len(neighbors) <= 1:
+                continue
+
+            for node_1, node_2 in combinations(neighbors, 2):
+                node_1 = self.variables[str(node_1)]
+                node_2 = self.variables[str(node_2)]
+
+                pairs.append((
+                    node_1.get_edge(middle_node),
+                    middle_node.get_edge(node_2),
+                ))
+
+        return pairs
+
     def get_edges(self):
         """
-            Returns: set of Edges
+            Returns: list of Edges
         """
         edges = []
 
-        for node in self.adjacency_matrix.columns:
-            node_edges = self.adjacency_matrix[node]
+        for _, node in self.variables.items():
+            node_edges = node.get_edges()
 
-            present_node_edges = node_edges[node_edges.notnull()]
-
-            nodes = list(present_node_edges.index)
-
-            for edge, other_node in zip(present_node_edges, nodes):
-                edges.append(
-                    Edge('{} {} {}'.format(node, edge, other_node))
-                )
+            for node_edge in node_edges:
+                if node_edge not in edges:
+                    edges.append(node_edge)
 
         return edges
 
@@ -413,11 +581,8 @@ class PartialAncestralGraph:
             Returns: set
                 set of nodes
         """
-        edges = self.adjacency_matrix[node]
-
-        neighbors = set(list(edges[edges.notnull()].index))
-
-        return neighbors - set({node})
+        _node = self.variables[str(node)]
+        return _node.get_neighbors()
 
     def get_nodes(self):
         """
@@ -434,9 +599,10 @@ class PartialAncestralGraph:
             Parameters:
                 nodes: tuple
         """
-        node_1, node_2 = tuple(nodes)
+        node_1 = self.variables[nodes[0]]
+        node_2 = self.variables[nodes[1]]
 
-        return not pd.isna(self.adjacency_matrix.loc[node_1, node_2])
+        return node_1.is_adjacent(node_2)
 
     def has_edge(self, string):
         """
@@ -457,14 +623,12 @@ class PartialAncestralGraph:
 
             Returns: bool
         """
-        node_1, marks, node_2 = \
+        _node_1, _, _node_2 = \
             self._get_nodes_and_marks(string)
 
-        internal_marks = self._convert_arrowheads(marks)
-
         try:
-            return self.adjacency_matrix.loc[node_1, node_2] \
-                == internal_marks
+            node_1 = self.variables[_node_1]
+            return node_1.get_edge(_node_2) == Edge(string)
         except KeyError:
             return False
 
@@ -483,13 +647,19 @@ class PartialAncestralGraph:
                         'A --> B'
                         'A <-- B'
         """
-        node_1, marks, node_2 = \
-            self._get_nodes_and_marks(string)
+        edge = Edge(string)
 
-        self.adjacency_matrix.loc[node_1, node_2] = \
-            self._convert_arrowheads(marks)
-        self.adjacency_matrix.loc[node_2, node_1] = \
-            self._convert_arrowheads(marks[::-1])
+        if str(edge.node_1) not in self.variables.keys():
+            self.variables[str(edge.node_1)] = edge.node_1
+
+        if str(edge.node_2) not in self.variables.keys():
+            self.variables[str(edge.node_2)] = edge.node_2
+
+        node_1 = self.variables[str(edge.node_1)]
+        node_2 = self.variables[str(edge.node_2)]
+
+        node_1.add_edge(edge)
+        node_2.add_edge(edge)
 
         if self._has_directed_cycle(
             node_1,
@@ -525,63 +695,49 @@ class PartialAncestralGraph:
         undirected_edges = self._get_undirected_edges()
 
         for undirected_edge in undirected_edges:
-            node_1, node_2 = tuple(undirected_edge)
-
-            if self._part_of_bidirected_edge(node_1) or self._part_of_bidirected_edge(node_2):
+            if self._part_of_bidirected_edge(undirected_edge.node_1) \
+                or self._part_of_bidirected_edge(undirected_edge.node_2):
                 return True
 
         return False
 
     def _part_of_undirected_edge(self, node):
-        edges = self.adjacency_matrix[node]
-        undirected_edge = '{}-{}'.format(self.TAIL, self.TAIL)
+        _node = self.variables[str(node)]
 
-        other_nodes = edges[edges == undirected_edge].index
+        edges = _node.get_edges()
+        for edge in edges:
+            if edge.is_undirected():
+                return True
 
-        return len(other_nodes) > 0
+        return False
 
     def _part_of_bidirected_edge(self, node):
-        edges = self.adjacency_matrix[node]
-        bidirected_edge = '{}-{}'.format(self.ARROWHEAD, self.ARROWHEAD)
+        _node = self.variables[str(node)]
 
-        other_nodes = edges[edges == bidirected_edge].index
+        edges = _node.get_edges()
+        for edge in edges:
+            if edge.is_bidirected():
+                return True
 
-        return len(other_nodes) > 0
+        return False
 
     def _get_undirected_edges(self):
         undirected_edges = []
-        undirected_edge = '{}-{}'.format(self.TAIL, self.TAIL)
 
-        for column_name in self.adjacency_matrix.columns:
-            edges = self.adjacency_matrix[column_name]
-            other_nodes = edges[edges == undirected_edge].index
+        edges = self.get_edges()
 
-            for other_node in other_nodes:
-                undirected_edges.append(set({column_name, other_node}))
-
-        for column_name in self.adjacency_matrix.T.columns:
-            edges = self.adjacency_matrix.T[column_name]
-            other_nodes = edges[edges == undirected_edge].index
-
-            for other_node in other_nodes:
-                undirected_edges.append(set({column_name, other_node}))
+        for edge in edges:
+            if edge.is_undirected():
+                undirected_edges.append(edge)
 
         return undirected_edges
-
 
     def _get_bidirected_edges(self):
         bidirected_edges = []
 
-        bidirected = '{}-{}'.format(self.ARROWHEAD, self.ARROWHEAD)
-
-        for column_name in self.adjacency_matrix.columns:
-            column = self.adjacency_matrix[column_name]
-            nodes = column[column == bidirected].index
-
-            for node in nodes:
-                bidirected_edges.append(
-                    set({column_name, node})
-                )
+        for edge in self.get_edges():
+            if edge.is_bidirected():
+                bidirected_edges.append(edge)
 
         return bidirected_edges
 
@@ -589,7 +745,8 @@ class PartialAncestralGraph:
         bidirected_edges = self._get_bidirected_edges()
 
         for bidirected_edge in bidirected_edges:
-            node_1, node_2 = tuple(bidirected_edge)
+            node_1 = self.variables[str(bidirected_edge.node_1)]
+            node_2 = self.variables[str(bidirected_edge.node_2)]
 
             if self._has_directed_path(
                 from_node=node_1,
@@ -606,37 +763,34 @@ class PartialAncestralGraph:
         return False
 
     def _has_directed_path(self, from_node, to_node):
-        directed_edge = '{}-{}'.format(self.TAIL, self.ARROWHEAD)
-        node_1_edges = self.adjacency_matrix.loc[from_node]
-        children = node_1_edges[node_1_edges == directed_edge].index
+        edges = from_node.get_edges()
 
-        for child in children:
-            if child == to_node:
+        for edge in edges:
+            if edge.out_of(from_node) and edge.into(to_node):
                 return True
 
-            return self._has_directed_path(
-                from_node=child,
-                to_node=to_node,
-            )
+            other_node = self.variables[str(edge.get_node_other_than(from_node))]
+
+            children = other_node.get_children()
+
+            for child in children:
+                if from_node == child:
+                    continue
+
+                return self._has_directed_path(
+                    from_node=self.variables[str(child)],
+                    to_node=to_node,
+                )
 
         return False
 
     def _has_directed_cycle(self, node_1, node_2):
-        blah = self._has_directed_path(from_node=node_1, to_node=node_2)
-
-        bleh = self._has_directed_path(
+        return self._has_directed_path(
+            from_node=node_1,
+            to_node=node_2
+        ) and self._has_directed_path(
             from_node=node_2,
             to_node=node_1
-        )
-
-        return blah and bleh
-
-    def _convert_arrowheads(self, edge):
-        return re.sub(
-            '[{}]|[{}]'.format(self.LEFT_ARROWHEAD, self.RIGHT_ARROWHEAD)
-            ,
-            self.ARROWHEAD,
-            edge
         )
 
     def _get_nodes_and_marks(self, string_or_edge):

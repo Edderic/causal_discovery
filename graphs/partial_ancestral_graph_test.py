@@ -1,8 +1,35 @@
 # pylint: disable=missing-module-docstring
 # pylint: disable=missing-function-docstring
 import pytest # pylint: disable=unused-import
-from graphs.partial_ancestral_graph import PartialAncestralGraph, Edge
+from graphs.partial_ancestral_graph import PartialAncestralGraph, Edge, Node
 from errors import NotAncestralError, ArgumentError
+
+def test_get_adjacent_pairs_of_edges():
+    pag = PartialAncestralGraph()
+    pag.add_edge('A o-> B')
+    pag.add_edge('B o-> C')
+
+    results = pag.get_adjacent_pairs_of_edges()
+    assert len(results) == 1
+
+    first_result = results[0]
+
+    assert Edge('A o-> B') in first_result
+    assert Edge('B o-> C') in first_result
+
+def test_node():
+    node = Node('A')
+    edge = Edge('A o-> B')
+
+    node.add_edge(edge)
+
+    assert edge in node.get_edges()
+
+    assert ['B'] == list(node.get_neighbors())
+
+    node.remove_edge(Edge('B <-o A'))
+
+    assert node.get_edges() == []
 
 def test_edge_undetermined_of():
     edge = Edge('A o-o B')
@@ -25,23 +52,13 @@ def test_edge_undetermined_of():
 
 def test_edge_into_and_out_of():
     edge = Edge('A o-o B')
+    assert not edge.into('A')
     edge.set_into('A')
+    assert edge.into('A')
     assert edge == Edge('A <-o B')
-
-    with pytest.raises(ArgumentError):
-        edge.into('non-existent variable')
-
-    with pytest.raises(ArgumentError):
-        edge.out_of('non-existent variable')
 
     edge.set_out_of('B')
     assert edge == Edge('A <-- B')
-
-    with pytest.raises(ArgumentError):
-        edge.set_into('non-existent variable')
-
-    with pytest.raises(ArgumentError):
-        edge.set_out_of('non-existent variable')
 
 def test_edge():
     edge = Edge('A --> B')
@@ -134,8 +151,8 @@ def test_init_complete_graph():
     assert graph.has_edge('C o-o B')
     assert graph.has_edge('A o-o C')
 
-    assert set({'A', 'C'}) == graph.get_neighbors('B')
-    assert set({'B', 'C'}) == graph.get_neighbors('A')
+    assert set({'A', 'C'}) == {str(n) for n in graph.get_neighbors('B')}
+    assert set({'B', 'C'}) == {str(n) for n in graph.get_neighbors('A')}
 
     assert Edge('A o-o B') in graph.get_edges()
     assert Edge('A o-o A') not in graph.get_edges()
