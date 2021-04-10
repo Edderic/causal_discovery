@@ -136,7 +136,7 @@ def key_for_pair(var_names):
     """
         Used for accessing the cond_sets_that_satisfy_cond_indep.
     """
-    _var_names = list(var_names)
+    _var_names = [str(i) for i in var_names]
     _var_names.sort()
     return _var_names[0] + ' _||_ ' + _var_names[1]
 
