@@ -19,5 +19,9 @@ dependencies:
   - pytest=6.2.1
   - graphviz=2.42.3
   - python-graphviz=0.16
+  - tqdm=4.56.0
+  - pylint=2.7.1
+  - pre_commit=2.10.1
+  - autopep8=1.5.5
 
 
