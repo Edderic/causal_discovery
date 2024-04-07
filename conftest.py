@@ -7,7 +7,13 @@
 import pytest
 import numpy as np
 import pandas as pd
-from graphs.marked_pattern_graph import MarkedPatternGraph
+
+from distributed import Client
+
+
+@pytest.fixture(scope='session')
+def dask_client():
+    return Client()
 
 @pytest.fixture
 def multinomial_RV():
@@ -265,12 +271,12 @@ def df_chain_and_collider_with_MI(df_chain_and_collider_without_MI):
     #         v
     #        M_a
     #
-    def _setup(size=10000, proba_noise=0.8):
+    def _setup(size=10000, proba_noise=0.3):
         df = df_chain_and_collider_without_MI(
-            size=size, proba_noise=proba_noise
+            size=size
         )
 
-        MI_a = df['d'] * np.random.binomial(n=1, p=0.3, size=size)
+        MI_a = df['d'] * np.random.binomial(n=1, p=proba_noise, size=size)
 
         missingness_indices = np.where(MI_a == 1)
 
@@ -295,11 +301,11 @@ def df_2_deterministic_and_3rd_var_caused_by_one_of_them():
 
     yield _setup
 
-@pytest.fixture
-def simple_chain_graph():
+# @pytest.fixture
+# def simple_chain_graph():
     #   X -> Y -> Z
 
-    return MarkedPatternGraph(
-        nodes=['X_t=1', 'X_t=2', 'X_t=3'],
-        undirected_edges=[('X_t=1', 'X_t=2'), ('X_t=2', 'X_t=3')]
-    )
+    # return MarkedPatternGraph(
+        # nodes=['X_t=1', 'X_t=2', 'X_t=3'],
+        # undirected_edges=[('X_t=1', 'X_t=2'), ('X_t=2', 'X_t=3')]
+    # )

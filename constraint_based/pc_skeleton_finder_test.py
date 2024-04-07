@@ -7,14 +7,13 @@ from causal_discovery.constraint_based.pc_skeleton_finder import PCSkeletonFinde
 from causal_discovery.data import dog_example
 from causal_discovery.graphs.partial_ancestral_graph import PartialAncestralGraph as Graph
 
-from distributed import Client
-
-client = Client()
 
 # PCSkeletonFinder is missing an edge because the distribution we used is
 # unstable. It has independencies that is incompatible with the true DAG
+@pytest.mark.f
 def test_2_deterministic_and_3rd_var_caused_by_one_of_them(
-    df_2_deterministic_and_3rd_var_caused_by_one_of_them
+    df_2_deterministic_and_3rd_var_caused_by_one_of_them,
+    dask_client
 ):
     df = df_2_deterministic_and_3rd_var_caused_by_one_of_them(size=1000)
     graph = Graph(variables=list(df.columns), complete=True)
@@ -22,7 +21,7 @@ def test_2_deterministic_and_3rd_var_caused_by_one_of_them(
     skeleton_finder = PCSkeletonFinder(
         data=df,
         graph=graph,
-        client=client
+        client=dask_client
     )
 
     skeleton_finder.find()
@@ -30,7 +29,7 @@ def test_2_deterministic_and_3rd_var_caused_by_one_of_them(
     assert graph.has_adjacency(('x','y'))
     assert graph.get_nodes() == set({'x', 'y', 'z'}) # pylint: disable='no-member'
 
-def test_2_multinom_RVs(df_2_multinomial_indep_RVs):
+def test_2_multinom_RVs(df_2_multinomial_indep_RVs, dask_client):
     df = df_2_multinomial_indep_RVs(size=10000)
     graph = Graph(
         variables=list(df.columns),
@@ -41,7 +40,7 @@ def test_2_multinom_RVs(df_2_multinomial_indep_RVs):
     skeleton_finder = PCSkeletonFinder(
         data=df,
         graph=graph,
-        client=client
+        client=dask_client
     )
 
     cond_sets_satisfying_cond_indep = skeleton_finder.find()
@@ -49,7 +48,7 @@ def test_2_multinom_RVs(df_2_multinomial_indep_RVs):
     assert graph.get_edges() == []
     assert cond_sets_satisfying_cond_indep['x _||_ y'] == set({frozenset({})})
 
-def test_skeleton_finder_X_causes_Y(df_X_causes_Y):
+def test_skeleton_finder_X_causes_Y(df_X_causes_Y, dask_client):
     df = df_X_causes_Y(size=1000)
 
     graph = Graph(
@@ -60,7 +59,7 @@ def test_skeleton_finder_X_causes_Y(df_X_causes_Y):
     skeleton_finder = PCSkeletonFinder(
         data=df,
         graph=graph,
-        client=client
+        client=dask_client
     )
 
     cond_sets_satisfying_cond_indep = skeleton_finder.find()
@@ -79,7 +78,7 @@ def test_skeleton_finder_Z_causes_X_and_Y(df_Z_causes_X_and_Y):
     skeleton_finder = PCSkeletonFinder(
         data=df,
         graph=graph,
-        client=client
+        client=dask_client
     )
 
     cond_sets_satisfying_cond_indep = skeleton_finder.find()
@@ -90,7 +89,8 @@ def test_skeleton_finder_Z_causes_X_and_Y(df_Z_causes_X_and_Y):
         {'x _||_ y': set({frozenset({'z'})})}
 
 def test_long_chains_collider_bias_without_MI(
-    df_long_chains_and_collider_without_MI
+    df_long_chains_and_collider_without_MI,
+    dask_client
 ):
     size = 100000
 
@@ -104,7 +104,7 @@ def test_long_chains_collider_bias_without_MI(
     skeleton_finder = PCSkeletonFinder(
         data=df,
         graph=graph,
-        client=client
+        client=dask_client
     )
 
     skeleton_finder.find()
@@ -115,7 +115,8 @@ def test_long_chains_collider_bias_without_MI(
     assert graph.has_adjacency(('c', 'd'))
 
 def test_long_chains_collider_bias_with_MI(
-    df_long_chains_and_collider_with_MI
+    df_long_chains_and_collider_with_MI,
+    dask_client
 ):
     size = 10000
 
@@ -129,7 +130,7 @@ def test_long_chains_collider_bias_with_MI(
     skeleton_finder = PCSkeletonFinder(
         data=df,
         graph=graph,
-        client=client
+        client=dask_client
     )
 
     skeleton_finder.find()
@@ -144,7 +145,8 @@ def test_long_chains_collider_bias_with_MI(
     assert graph.has_adjacency(('c', 'd'))
 
 def test_chain_and_collider_without_MI(
-    df_chain_and_collider_without_MI
+    df_chain_and_collider_without_MI,
+    dask_client
 ):
     size = 10000
 
@@ -158,7 +160,7 @@ def test_chain_and_collider_without_MI(
     skeleton_finder = PCSkeletonFinder(
         data=df,
         graph=graph,
-        client=client
+        client=dask_client
     )
 
     skeleton_finder.find()
@@ -169,7 +171,8 @@ def test_chain_and_collider_without_MI(
     assert graph.has_adjacency(('c', 'd'))
 
 def test_chain_and_collider_with_MI(
-    df_chain_and_collider_with_MI
+    df_chain_and_collider_with_MI,
+    dask_client
 ):
     size = 20000
 
@@ -182,7 +185,7 @@ def test_chain_and_collider_with_MI(
     skeleton_finder = PCSkeletonFinder(
         data=df,
         graph=graph,
-        client=client
+        client=dask_client
     )
 
     skeleton_finder.find()
@@ -197,7 +200,8 @@ def test_chain_and_collider_with_MI(
     assert graph.has_adjacency(('c', 'd'))
 
 def test_3_multinom_RVs_MAR(
-    df_Z_causes_X_Y_and_X_Z_causes_MI_Y
+    df_Z_causes_X_Y_and_X_Z_causes_MI_Y,
+    dask_client
 ):
     size = 70000
 
@@ -211,7 +215,7 @@ def test_3_multinom_RVs_MAR(
     skeleton_finder = PCSkeletonFinder(
         data=df,
         graph=graph,
-        client=client
+        client=dask_client
     )
 
     skeleton_finder.find()
@@ -221,7 +225,7 @@ def test_3_multinom_RVs_MAR(
     assert graph.has_adjacency(('x', 'z'))
     assert graph.has_adjacency(('y', 'z'))
 
-def test_dog_pee():
+def test_dog_pee(dask_client):
     size = 100000
 
     # Sometimes cloudy
@@ -258,7 +262,7 @@ def test_dog_pee():
     skeleton_finder = PCSkeletonFinder(
         data=df,
         graph=graph,
-        client=client
+        client=dask_client
     )
 
     skeleton_finder.find()
@@ -280,7 +284,7 @@ def test_dog_example():
     skeleton_finder = PCSkeletonFinder(
         data=df,
         graph=graph,
-        client=client
+        client=dask_client
     )
 
     cond_sets_satisfying_cond_indep = \
