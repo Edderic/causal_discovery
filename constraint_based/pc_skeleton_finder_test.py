@@ -1,12 +1,15 @@
-# pylint: disable=missing-module-docstring,missing-function-docstring
+#constraint_based/pc_skeleton_finder_test.py pylint: disable=missing-module-docstring,missing-function-docstring
 import pytest # pylint: disable=unused-import
 import numpy as np
 import pandas as pd
-from constraint_based.misc import key_for_pair
-from constraint_based.pc_skeleton_finder import PCSkeletonFinder
-from data import dog_example
-from graphs.partial_ancestral_graph import PartialAncestralGraph as Graph
+from causal_discovery.constraint_based.misc import key_for_pair
+from causal_discovery.constraint_based.pc_skeleton_finder import PCSkeletonFinder
+from causal_discovery.data import dog_example
+from causal_discovery.graphs.partial_ancestral_graph import PartialAncestralGraph as Graph
 
+from distributed import Client
+
+client = Client()
 
 # PCSkeletonFinder is missing an edge because the distribution we used is
 # unstable. It has independencies that is incompatible with the true DAG
@@ -18,7 +21,8 @@ def test_2_deterministic_and_3rd_var_caused_by_one_of_them(
 
     skeleton_finder = PCSkeletonFinder(
         data=df,
-        graph=graph
+        graph=graph,
+        client=client
     )
 
     skeleton_finder.find()
@@ -36,7 +40,8 @@ def test_2_multinom_RVs(df_2_multinomial_indep_RVs):
 
     skeleton_finder = PCSkeletonFinder(
         data=df,
-        graph=graph
+        graph=graph,
+        client=client
     )
 
     cond_sets_satisfying_cond_indep = skeleton_finder.find()
@@ -54,7 +59,8 @@ def test_skeleton_finder_X_causes_Y(df_X_causes_Y):
 
     skeleton_finder = PCSkeletonFinder(
         data=df,
-        graph=graph
+        graph=graph,
+        client=client
     )
 
     cond_sets_satisfying_cond_indep = skeleton_finder.find()
@@ -72,7 +78,8 @@ def test_skeleton_finder_Z_causes_X_and_Y(df_Z_causes_X_and_Y):
 
     skeleton_finder = PCSkeletonFinder(
         data=df,
-        graph=graph
+        graph=graph,
+        client=client
     )
 
     cond_sets_satisfying_cond_indep = skeleton_finder.find()
@@ -96,7 +103,8 @@ def test_long_chains_collider_bias_without_MI(
 
     skeleton_finder = PCSkeletonFinder(
         data=df,
-        graph=graph
+        graph=graph,
+        client=client
     )
 
     skeleton_finder.find()
@@ -120,7 +128,8 @@ def test_long_chains_collider_bias_with_MI(
 
     skeleton_finder = PCSkeletonFinder(
         data=df,
-        graph=graph
+        graph=graph,
+        client=client
     )
 
     skeleton_finder.find()
@@ -148,7 +157,8 @@ def test_chain_and_collider_without_MI(
 
     skeleton_finder = PCSkeletonFinder(
         data=df,
-        graph=graph
+        graph=graph,
+        client=client
     )
 
     skeleton_finder.find()
@@ -171,7 +181,8 @@ def test_chain_and_collider_with_MI(
 
     skeleton_finder = PCSkeletonFinder(
         data=df,
-        graph=graph
+        graph=graph,
+        client=client
     )
 
     skeleton_finder.find()
@@ -199,7 +210,8 @@ def test_3_multinom_RVs_MAR(
 
     skeleton_finder = PCSkeletonFinder(
         data=df,
-        graph=graph
+        graph=graph,
+        client=client
     )
 
     skeleton_finder.find()
@@ -245,7 +257,8 @@ def test_dog_pee():
     )
     skeleton_finder = PCSkeletonFinder(
         data=df,
-        graph=graph
+        graph=graph,
+        client=client
     )
 
     skeleton_finder.find()
@@ -266,7 +279,8 @@ def test_dog_example():
 
     skeleton_finder = PCSkeletonFinder(
         data=df,
-        graph=graph
+        graph=graph,
+        client=client
     )
 
     cond_sets_satisfying_cond_indep = \
