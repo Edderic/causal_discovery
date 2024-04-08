@@ -1,7 +1,7 @@
 import pytest
-from graphs.marked_pattern.edges import MarkedPatternEdge
-from graphs.marked_pattern.edges import NoEdge, UndirectedEdge, UnmarkedArrow, MarkedArrow
-from errors import NotComparableError
+from causal_discovery.graphs.marked_pattern.edges import MarkedPatternEdge
+from causal_discovery.graphs.marked_pattern.edges import NoEdge, UndirectedEdge, UnmarkedArrow, MarkedArrow
+from causal_discovery.errors import NotComparableError
 
 def test_hamming_distance_no_edge_vs_no_edge_diff_vars():
     edge = NoEdge('A', 'B')

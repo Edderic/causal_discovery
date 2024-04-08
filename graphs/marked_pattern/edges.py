@@ -1,4 +1,4 @@
-from errors import NotComparableError
+from causal_discovery.errors import NotComparableError
 
 class MarkedPatternEdge(object):
     def __init__(self, node_1, node_2):
