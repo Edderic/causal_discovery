@@ -62,13 +62,11 @@ def bmd_is_independent(
     _data = data.copy()
     _data['tmp_count'] = 0
 
-    classes_for_var_1 = _data\
-        .groupby(var_1).count().index
-
     classes_for_var_2 = _data\
         .groupby(var_2).count().index
 
     if conditioning_set == []:
+        # Sample from P(X)
         p1, _ = posterior(
             _data,
             variable=var_1
@@ -77,6 +75,7 @@ def bmd_is_independent(
         cond_set_var_2 = {}
 
         for var_2_val in classes_for_var_2:
+            # Sample from P(X | Y=y)
             cond_set_var_2[var_2] = var_2_val
             p2, num_rows_2 = posterior(
                 _data,
@@ -87,6 +86,7 @@ def bmd_is_independent(
             if num_rows_2 == 0:
                 continue
 
+            # ... see if P(X) and P(X | Y=y) are significantly different
             if is_dependent(p1, p2, threshold):
                 return False
 
@@ -144,7 +144,6 @@ def posterior(data, variable, conditioning_set={}, size=10000):
                 value: value of said variable
             size: int. Defaults to 1,000
     """
-
     if conditioning_set == {}:
         _counts = data.groupby(variable).count()
         bdeu_prior = np.ones(_counts.shape[0]) / _counts.shape[0]
@@ -176,10 +175,10 @@ def posterior(data, variable, conditioning_set={}, size=10000):
     return np.random.dirichlet( tuple((bdeu_prior + data_count)), size=size), num_rows
 
 def is_dependent(p1, p2, proba_threshold, subt_cutoff=0):
-    acceptable_1 = (p1 - p2 > subt_cutoff).sum(axis=0) / p1.shape[0] >= proba_threshold
-    acceptable_2 = (p2 - p1 > subt_cutoff).sum(axis=0) / p1.shape[0] >= proba_threshold
+    acceptable_1 = (p1 > p2).sum(axis=0) / p1.shape[0] >= proba_threshold
+    acceptable_2 = (p2 > p1).sum(axis=0) / p1.shape[0] >= proba_threshold
 
-    return (acceptable_1 + acceptable_2).sum() > 0
+    return (acceptable_1.sum() + acceptable_2.sum()) > 0
 
 def make_data_counts_same_size_as_num_classes(expected_num_classes, counts):
     """

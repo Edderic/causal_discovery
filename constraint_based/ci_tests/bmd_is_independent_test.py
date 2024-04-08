@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from .bmd_is_independent import bmd_is_independent, posterior
-from data import dog_example
+from causal_discovery.data import dog_example
 
 def test_uniform_multinomial_with_4_possible_values_size_10000(
     df_2_multinomial_indep_RVs
