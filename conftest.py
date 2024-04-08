@@ -107,7 +107,7 @@ def df_X_and_Y_cause_Z_and_Z_cause_MI_X(df_X_and_Y_cause_Z):
 
         missingness_indices = np.where(missingness_of_x == 1)
 
-        df.at[missingness_indices[0], 'x'] = np.nan
+        df.loc[missingness_indices[0], 'x'] = np.nan
 
         return df
 
@@ -127,7 +127,7 @@ def df_X_Y_indep_Y_causes_MI_X(df_2_multinomial_indep_RVs):
 
         missingness_indices = np.where(missingness_of_x == 1)
 
-        df.at[missingness_indices[0], 'x'] = np.nan
+        df.loc[missingness_indices[0], 'x'] = np.nan
 
         return df
 
