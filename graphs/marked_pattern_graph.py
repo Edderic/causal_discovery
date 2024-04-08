@@ -1,6 +1,7 @@
 from graphviz import Digraph
 from causal_discovery.graphs.marked_pattern.edges import NoEdge, UndirectedEdge, UnmarkedArrow, MarkedArrow
 import re
+from itertools import combinations
 
 class MarkedPatternGraph(object):
     NO_ARROWHEAD = "-"
@@ -46,7 +47,8 @@ class MarkedPatternGraph(object):
         unmarked_arrows=[],
         bidirectional_edges=[],
         undirected_edges=[],
-        missingness_indicator_prefix='MI_'
+        missingness_indicator_prefix='MI_',
+        undirected_complete=False
     ):
         assert len(nodes) > 0
 
@@ -56,7 +58,14 @@ class MarkedPatternGraph(object):
         self.add_bidirectional_edges(bidirectional_edges)
 
         self.add_unmarked_arrows(unmarked_arrows)
-        self.add_undirected_edges(undirected_edges)
+
+        if undirected_complete:
+            combos = combinations(nodes, 2)
+            for x,y in combos:
+                self.add_undirected_edge((x,y))
+        else:
+            self.add_undirected_edges(undirected_edges)
+
         self.add_marked_arrows(marked_arrows)
 
         self.missingness_indicator_prefix = missingness_indicator_prefix

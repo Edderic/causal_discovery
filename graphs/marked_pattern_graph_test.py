@@ -463,3 +463,20 @@ def test_get_edge_marked_arrow_edge():
 
     edge = graph.get_edge('d', 'a')
     assert isinstance(edge, MarkedArrow)
+
+@pytest.mark.f
+def test_undirected_complete():
+    """
+    undirected complete graph = true, meaning each pair of
+    variables has an undirected edge between thehm
+    """
+
+
+    graph = MarkedPatternGraph(
+        nodes=['a', 'b', 'c'],
+        undirected_complete=True
+    )
+
+    assert isinstance(graph.get_edge('a', 'b'), UndirectedEdge)
+    assert isinstance(graph.get_edge('a', 'c'), UndirectedEdge)
+    assert isinstance(graph.get_edge('c', 'b'), UndirectedEdge)
