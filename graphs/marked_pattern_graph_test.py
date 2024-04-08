@@ -427,7 +427,6 @@ def test_get_edge_no_edge():
     edge = graph.get_edge('d', 'e')
     assert isinstance(edge, NoEdge)
 
-@pytest.mark.f
 def test_get_edge_undirected_edge():
     graph = MarkedPatternGraph(
         nodes=['a', 'b', 'c', 'd', 'e'],
@@ -441,3 +440,26 @@ def test_get_edge_undirected_edge():
     assert isinstance(edge, UndirectedEdge)
 
 
+def test_get_edge_unmarked_arrow_edge():
+    graph = MarkedPatternGraph(
+        nodes=['a', 'b', 'c', 'd', 'e'],
+        undirected_edges=[('a', 'b')],
+        bidirectional_edges=[('b', 'c')],
+        unmarked_arrows=[('c', 'd')],
+        marked_arrows=[('d', 'a')]
+    )
+
+    edge = graph.get_edge('c', 'd')
+    assert isinstance(edge, UnmarkedArrow)
+
+def test_get_edge_marked_arrow_edge():
+    graph = MarkedPatternGraph(
+        nodes=['a', 'b', 'c', 'd', 'e'],
+        undirected_edges=[('a', 'b')],
+        bidirectional_edges=[('b', 'c')],
+        unmarked_arrows=[('c', 'd')],
+        marked_arrows=[('d', 'a')]
+    )
+
+    edge = graph.get_edge('d', 'a')
+    assert isinstance(edge, MarkedArrow)

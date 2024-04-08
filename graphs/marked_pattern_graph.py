@@ -1,5 +1,5 @@
 from graphviz import Digraph
-from causal_discovery.graphs.marked_pattern.edges import NoEdge, UndirectedEdge
+from causal_discovery.graphs.marked_pattern.edges import NoEdge, UndirectedEdge, UnmarkedArrow, MarkedArrow
 import re
 
 class MarkedPatternGraph(object):
@@ -352,6 +352,12 @@ class MarkedPatternGraph(object):
 
         if '-' in self.dict[node_1] and node_2 in self.dict[node_1]['-']:
             return UndirectedEdge(node_1, node_2)
+
+        if '->' in self.dict[node_1] and node_2 in self.dict[node_1]['->']:
+            return UnmarkedArrow(node_1, node_2)
+
+        if '*>' in self.dict[node_1] and node_2 in self.dict[node_1]['*>']:
+            return MarkedArrow(node_1, node_2)
 
 
     def get_neighbors(self, node):
