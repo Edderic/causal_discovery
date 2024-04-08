@@ -19,6 +19,17 @@ class PotentiallyExtraneousEdgesFinder(object):
              X->A, Y->A,      # A is a collider.
              A->Ry            # Ry is a descendant of a collider.
 
+        Like so:
+
+         X     Y
+         \  \ /
+          v  v
+          Z  A
+             |
+             v
+             Ry
+
+
         Once we have a data set produced by the above, running SkeletonFinder
         on it, we might find a graph like so:
 
@@ -29,6 +40,15 @@ class PotentiallyExtraneousEdgesFinder(object):
              X-Y              # Conditioning on a collider / descendant of a
                               #   collider could lead to spurious edges.
 
+
+        E.g.
+         X  -  Y
+         \  \ /
+          v  v
+          Z  A
+             |
+             v
+             Ry
 
         Note: This only applies when missingness is MAR or MNAR. If data given
         is MCAR, then there shouldn't be extraneous edges and exit early.

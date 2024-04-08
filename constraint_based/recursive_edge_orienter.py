@@ -1,4 +1,4 @@
-from graphs.marked_pattern_graph import MarkedPatternGraph
+from causal_discovery.graphs.marked_pattern_graph import MarkedPatternGraph
 
 class RecursiveEdgeOrienter(object):
     """
