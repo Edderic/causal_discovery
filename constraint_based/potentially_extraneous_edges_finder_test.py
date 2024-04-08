@@ -1,7 +1,7 @@
 import pytest
 import pandas as pd
-from graphs.marked_pattern_graph import MarkedPatternGraph
-from constraint_based.potentially_extraneous_edges_finder import PotentiallyExtraneousEdgesFinder
+from causal_discovery.graphs.marked_pattern_graph import MarkedPatternGraph
+from causal_discovery.constraint_based.potentially_extraneous_edges_finder import PotentiallyExtraneousEdgesFinder
 
 def test_mcar():
     marked_pattern_graph = MarkedPatternGraph(

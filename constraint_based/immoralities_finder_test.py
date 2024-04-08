@@ -2,9 +2,9 @@
 # pylint: disable=missing-function-docstring
 import pytest # pylint: disable=unused-import
 
-from graphs.partial_ancestral_graph import PartialAncestralGraph as PAG
-from constraint_based.immoralities_finder import ImmoralitiesFinder
-from constraint_based.misc import SepSets
+from causal_discovery.graphs.partial_ancestral_graph import PartialAncestralGraph as PAG
+from causal_discovery.constraint_based.immoralities_finder import ImmoralitiesFinder
+from causal_discovery.constraint_based.misc import SepSets
 
 def test_simple_chain():
     graph = PAG(variables=['X', 'Y', 'Z'])

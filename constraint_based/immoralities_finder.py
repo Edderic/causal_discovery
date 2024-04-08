@@ -60,7 +60,7 @@ class ImmoralitiesFinder: #pylint: disable=too-few-public-methods
         immoralities = []
 
         for edge in edges:
-            node_2_neighbors = list(self.graph.get_neighbors(edge.node_2) - set({edge.node_1}))
+            node_2_neighbors = list(set(self.graph.get_neighbors(edge.node_2)) - set({edge.node_1}))
             var_set = set({edge.node_2})
 
             for node_2_neighbor in node_2_neighbors:
