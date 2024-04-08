@@ -1,8 +1,8 @@
 import numpy as np
 import pytest
-from constraint_based.skeleton_finder import SkeletonFinder
-from constraint_based.direct_causes_of_missingness_finder import DirectCausesOfMissingnessFinder
-from graphs.marked_pattern_graph import MarkedPatternGraph
+from causal_discovery.constraint_based.skeleton_finder import SkeletonFinder
+from causal_discovery.constraint_based.direct_causes_of_missingness_finder import DirectCausesOfMissingnessFinder
+from causal_discovery.graphs.marked_pattern_graph import MarkedPatternGraph
 
 def test_2_multinom_RVs_MCAR(
     df_2_multinomial_indep_RVs
@@ -13,7 +13,7 @@ def test_2_multinom_RVs_MCAR(
     missingness_of_x = np.random.binomial(n=1, p=0.3, size=size)
     missingness_indices = np.where(missingness_of_x == 1)
 
-    df.at[missingness_indices[0], 'x'] = np.nan
+    df.loc[missingness_indices[0], 'x'] = np.nan
 
     graph = MarkedPatternGraph(
         nodes=['x','y']

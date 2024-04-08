@@ -153,7 +153,7 @@ def df_Z_causes_X_Y_and_X_Z_causes_MI_Y(df_Z_causes_X_and_Y):
 
         missingness_indices = np.where(missingness_of_y == 1)
 
-        df.at[missingness_indices[0], 'y'] = np.nan
+        df.loc[missingness_indices[0], 'y'] = np.nan
 
         return df
 
@@ -216,7 +216,7 @@ def df_long_chains_and_collider_with_MI(df_long_chains_and_collider_without_MI):
 
         missingness_indices = np.where(MI_b == 1)
 
-        df.at[missingness_indices[0], 'b'] = np.nan
+        df.loc[missingness_indices[0], 'b'] = np.nan
 
         return df
 
@@ -280,7 +280,7 @@ def df_chain_and_collider_with_MI(df_chain_and_collider_without_MI):
 
         missingness_indices = np.where(MI_a == 1)
 
-        df.at[missingness_indices[0], 'a'] = np.nan
+        df.loc[missingness_indices[0], 'a'] = np.nan
 
         return df
 

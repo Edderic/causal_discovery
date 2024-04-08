@@ -1,5 +1,5 @@
-from constraint_based.ci_tests.bmd_is_independent import bmd_is_independent
-from constraint_based.misc import setup_logging
+from causal_discovery.constraint_based.ci_tests.bmd_is_independent import bmd_is_independent
+from causal_discovery.constraint_based.misc import setup_logging
 from itertools import combinations
 
 class DirectCausesOfMissingnessFinder(object):
@@ -22,6 +22,8 @@ class DirectCausesOfMissingnessFinder(object):
 
         Paramters:
             data: pd.DataFrame
+                Potentially has columns that are prefixed with "MI_" which
+                represent missingness.
 
             missingness_prefix: str. Defaults to "MI_"
                 This is the string that gets prefixed to a column that has
