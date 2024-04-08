@@ -1,5 +1,6 @@
 import pytest
-from graphs.marked_pattern_graph import MarkedPatternGraph
+from causal_discovery.graphs.marked_pattern.edges import UndirectedEdge, UnmarkedArrow, MarkedArrow, NoEdge
+from causal_discovery.graphs.marked_pattern_graph import MarkedPatternGraph
 
 def test_has_path_when_there_are_none():
     graph = MarkedPatternGraph(
@@ -413,3 +414,30 @@ def test_simple():
         frozenset({'b', 'c'}),
         frozenset({'b', 'd'})
     })
+
+def test_get_edge_no_edge():
+    graph = MarkedPatternGraph(
+        nodes=['a', 'b', 'c', 'd', 'e'],
+        undirected_edges=[('a', 'b')],
+        bidirectional_edges=[('b', 'c')],
+        unmarked_arrows=[('c', 'd')],
+        marked_arrows=[('d', 'a')]
+    )
+
+    edge = graph.get_edge('d', 'e')
+    assert isinstance(edge, NoEdge)
+
+@pytest.mark.f
+def test_get_edge_undirected_edge():
+    graph = MarkedPatternGraph(
+        nodes=['a', 'b', 'c', 'd', 'e'],
+        undirected_edges=[('a', 'b')],
+        bidirectional_edges=[('b', 'c')],
+        unmarked_arrows=[('c', 'd')],
+        marked_arrows=[('d', 'a')]
+    )
+
+    edge = graph.get_edge('a', 'b')
+    assert isinstance(edge, UndirectedEdge)
+
+

@@ -1,4 +1,5 @@
 from graphviz import Digraph
+from causal_discovery.graphs.marked_pattern.edges import NoEdge, UndirectedEdge
 import re
 
 class MarkedPatternGraph(object):
@@ -344,6 +345,14 @@ class MarkedPatternGraph(object):
                     edges = edges.union(set({frozenset({node, other_node})}))
 
         return edges
+
+    def get_edge(self, node_1, node_2):
+        if node_1 not in self.dict or node_2 not in self.dict:
+            return NoEdge(node_1, node_2)
+
+        if '-' in self.dict[node_1] and node_2 in self.dict[node_1]['-']:
+            return UndirectedEdge(node_1, node_2)
+
 
     def get_neighbors(self, node):
         """
